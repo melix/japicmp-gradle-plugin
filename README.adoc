@@ -1,0 +1,58 @@
+= JApicmp Gradle Plugin
+:japicmp-url: https://github.com/siom79/japicmp
+:issues: https://github.com/melix/japicmp-gradle-plugin/issues
+:gradle-url: http://gradle.org/
+
+image:https://travis-ci.org/melix/japicmp-gradle-plugin.png?branch=master["Build Status", link="https://travis-ci.org/melix/japicmp-gradle-plugin"]
+
+The japicmp-gradle-plugin provides binary compatibility reporting through {japicmp-url}[JApicmp] using {gradle-url}[Gradle].
+
+== Installation
+
+Use the following snippet inside a Gradle build file:
+
+[source,groovy]
+.build.gradle
+----
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'me.champeau.gradle:japicmp-gradle-plugin:0.1.0'
+    }
+}
+apply plugin: 'me.champeau.gradle.japicmp'
+----
+
+== Configuration
+
+The plugin provides a new task type: `me.champeau.gradle.JapicmpTask` that you can use to compare two jars. This task
+exposes the following properties as part of its configuration:
+
+[horizontal]
+oldArchive:: The jar file which will be used as the reference for comparison. Type: _File_.
+newArchive:: The jar file we want the report to work on. Type: _File_.
+onlyModified:: Outputs only modified classes/methods. If not set to true, all classes and methods are printed. Type: _boolean_. Default value: _false_
+packagesToInclude:: List of package names to include, * can be used as wildcard. Type: _List<String>_
+packagesToExclude:: List of package names to exclude, * can be used as wildcard. Type: _List<String>_
+accessModifier:: Sets the access modifier level (public, package, protected, private). Type: _String_. Default value: _public_
+failOnModification:: When set to true, the build fails in case a modification has been detected. Type: _boolean_. Default value: _false_
+xmlOutputFile:: Path to the generated XML report. Type: _File_. Default value: _null_
+txtOutputFile:: Path to the generated TXT report. Type: _File_. Default value: _null_
+
+== Usage
+
+Add the following to your build file:
+
+[source,groovy]
+----
+task japicmp(type: me.champeau.gradle.JapicmpTask) {
+    oldArchive = file('path/to/reference.jar')
+    newArchive = jar.archivePath
+    onlyModified = true
+    failOnModification = true
+    txtOutputFile = file("$buildDir/reports/japi.txt")
+}
+----
