@@ -24,6 +24,5 @@ import org.gradle.api.Project
  */
 class JapicmpPlugin implements Plugin<Project> {
     void apply(Project project) {
-
     }
 }
