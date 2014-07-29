@@ -12,5 +12,10 @@ bintray {
         desc = 'Integrated japicmp into Gradle, for binary compatibility checks'
         licenses = ['Apache-2.0']
         labels = ['japicmp', 'gradle']
+        publicDownloadNumbers = true
+        version {
+            name = project.version
+            attributes = ['gradle-plugin': 'me.champeau.gradle.japicmp:me.champeau.gradle:japicmp-gradle-plugin']
+        }
     }
 }
