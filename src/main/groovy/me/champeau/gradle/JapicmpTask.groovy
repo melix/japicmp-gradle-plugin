@@ -15,16 +15,7 @@
  */
 package me.champeau.gradle
 
-import japicmp.cmp.JarArchiveComparator
-import japicmp.cmp.JarArchiveComparatorOptions
-import japicmp.config.Options
-import japicmp.config.PackageFilter
-import japicmp.model.AccessModifier
-import japicmp.model.JApiClass
-import japicmp.output.OutputTransformer
-import japicmp.output.stdout.StdoutOutputGenerator
-import japicmp.output.xml.XmlOutputGenerator
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.InputFile
 
 class JapicmpTask extends JapicmpAbstractTask {
     @InputFile
