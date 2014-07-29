@@ -56,3 +56,91 @@ task japicmp(type: me.champeau.gradle.JapicmpTask) {
     txtOutputFile = file("$buildDir/reports/japi.txt")
 }
 ----
+
+== Alternative task
+
+An alternative task will let you work on dependencies instead of plain jars. Imagine that you want to compare the current
+jar with a previous version, available in a repository. Then you can do:
+
+[source,groovy]
+----
+task japicmp(type: me.champeau.gradle.ArtifactJapicmpTask) {
+    baseline = 'com.acme.group:artifactid:version'
+    to = jar.archivePath
+    onlyModified = true
+    failOnModification = true
+    txtOutputFile = file("$buildDir/reports/japi.txt")
+}
+----
+
+Note the use of `ArtifactJapicmpTask` instead of `JapicmpTask`.
+
+== Custom build failure conditions
+
+The plugin also supports a DSL providing hooks for classes and methods which have been added/removed/... You can use
+those hooks to trigger custom build failures, like illustrated here:
+
+[source,groovy]
+----
+task japicmp(type: me.champeau.gradle.ArtifactJapicmpTask) {
+    baseline = 'com.acme.group:artifactid:version'
+    to = jar.archivePath
+    onlyModified = true
+    failOnModification = false // by default, no failure
+    txtOutputFile = file("$buildDir/reports/japi.txt")
+    outputProcessor {
+        removedMethod { clazz, method ->
+            if (clazz.fullyQualifiedName == 'com.Foo') {
+                failOnModification = true // This class must absolutely not be touched!
+            }
+        }
+    }
+}
+----
+
+The `outputProcessor` block supports the following hooks:
+
+.Output processor hooks
+[options="header,footer"]
+|======================
+|Hook name |Arguments |Description
+|unchangedClass |JApiClass |Called on an unchanged class, unless onlyModified is true
+|newClass |JApiClass |A class has been added
+|modifiedClass |JApiClass |A class has been modified
+|removedClass |JApiClass |A class has been removed
+|unchangedMethod |(JApiMethod) or (JApiClass,JApiMethod) |Called on an unchanged method, unless onlyModified is true
+|newMethod |(JApiMethod) or (JApiClass,JApiMethod) |A method has been added
+|modifiedMethod |(JApiMethod) or (JApiClass,JApiMethod) |A method has been modified
+|removedMethod |(JApiMethod) or (JApiClass,JApiMethod) |A method has been removed
+|before |List<JApiClass> | Called before iteration on classes is triggered
+|after |List<JApiClass> | Called after iteration on classes is triggered
+|======================
+
+The `xxxMethod` hooks support two variants. One takes a single argument corresponding to the method only. The second
+version is a convenient way to track to which class the method belongs to, by adding it as a first argument.
+
+== Custom output
+
+The `outputProcessor` hooks can be used to produce custom reports, as illustrated here:
+
+[source,groovy]
+----
+task japicmp(type: me.champeau.gradle.ArtifactJapicmpTask) {
+    // ...
+
+    outputProcessor {
+        def sb = new StringBuilder()
+
+        before {
+            sb << "Comparing $baseline with $to\n"
+        }
+        after { list ->
+            sb << "Reported ${list.size()} changed classes\n"
+            file("${buildDir}/reports/custom.txt").write(sb.toString())
+        }
+        newMethod { c, m ->
+           sb.append "Class $c.fullyQualifiedName has new method: $m.name\n"
+        }
+    }
+}
+----

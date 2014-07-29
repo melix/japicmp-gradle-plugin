@@ -48,6 +48,8 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     @Optional
     boolean failOnModification = false
 
+    private final OutputProcessorBuilder builder = new OutputProcessorBuilder(this)
+
     abstract File getOldArchive()
 
     abstract File getNewArchive()
@@ -94,5 +96,13 @@ abstract class JapicmpAbstractTask extends AbstractTask {
             String output = stdoutOutputGenerator.generate(getOldArchive(), getNewArchive(), jApiClasses, new Options())
             txtOutputFile.write(output)
         }
+        def generic = new GenericOutputProcessor(builder.classProcessors, builder.methodProcessors, builder.beforeProcessors, builder.afterProcessors, jApiClasses)
+        generic.processOutput()
+    }
+
+    public void outputProcessor(@DelegatesTo(OutputProcessorBuilder) Closure spec) {
+        def copy = spec.clone()
+        copy.delegate = builder
+        copy()
     }
 }
