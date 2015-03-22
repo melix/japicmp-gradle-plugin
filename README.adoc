@@ -20,7 +20,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'me.champeau.gradle:japicmp-gradle-plugin:0.1.0'
+        classpath 'me.champeau.gradle:japicmp-gradle-plugin:0.1.1'
         // UNCOMMENT THE NEXT LINE ONLY IF YOU ARE USING GRADLE 1.X
         // classpath 'org.codehaus.groovy:groovy-backports-compat23:2.3.6'
     }
