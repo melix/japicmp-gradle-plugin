@@ -7,7 +7,6 @@ import japicmp.config.PackageFilter
 import japicmp.model.AccessModifier
 import japicmp.model.JApiChangeStatus
 import japicmp.model.JApiClass
-import japicmp.output.OutputTransformer
 import japicmp.output.stdout.StdoutOutputGenerator
 import japicmp.output.xml.XmlOutputGenerator
 import org.gradle.api.GradleException
@@ -48,6 +47,10 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     @Optional
     boolean failOnModification = false
 
+    @Input
+    @Optional
+    Collection<File> classpath = null
+
     private final OutputProcessorBuilder builder = new OutputProcessorBuilder(this)
 
     abstract File getOldArchive()
@@ -73,30 +76,39 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     private JarArchiveComparatorOptions createOptions() {
         def options = new JarArchiveComparatorOptions()
         options.with {
-            modifierLevel = AccessModifier.valueOf(accessModifier.toUpperCase())
             packagesInclude.addAll(packageIncludes.collect { new PackageFilter(it) })
             packagesExclude.addAll(packageExcludes.collect { new PackageFilter(it) })
+            Collection<File> files = classpath ?: project.configurations.japicmp.files
+            files.each {
+                if (it.exists()) {
+                    classPathEntries.add(it.absolutePath)
+                }
+            }
         }
         options
     }
 
     private void generateOutput(final List<JApiClass> jApiClasses) {
-        OutputTransformer.sortClassesAndMethods(jApiClasses)
         // we create a dummy options because we don't want to avoid use of internal classes of JApicmp
         def options = new Options()
-        if (onlyModified) {
-            OutputTransformer.removeUnchanged(jApiClasses)
-        }
+        options.outputOnlyModifications = onlyModified
+        options.setAccessModifier(AccessModifier.valueOf(accessModifier.toUpperCase()))
         if (xmlOutputFile) {
             def xmlOutputGenerator = new XmlOutputGenerator()
             xmlOutputGenerator.generate(getOldArchive(), getNewArchive(), jApiClasses, options)
         }
         if (txtOutputFile) {
-            StdoutOutputGenerator stdoutOutputGenerator = new StdoutOutputGenerator()
-            String output = stdoutOutputGenerator.generate(getOldArchive(), getNewArchive(), jApiClasses, new Options())
+            StdoutOutputGenerator stdoutOutputGenerator = new StdoutOutputGenerator(options)
+            String output = stdoutOutputGenerator.generate(getOldArchive(), getNewArchive(), jApiClasses)
             txtOutputFile.write(output)
         }
-        def generic = new GenericOutputProcessor(builder.classProcessors, builder.methodProcessors, builder.beforeProcessors, builder.afterProcessors, jApiClasses)
+        def generic = new GenericOutputProcessor(
+                builder.classProcessors,
+                builder.methodProcessors,
+                builder.constructorProcessors,
+                builder.beforeProcessors,
+                builder.afterProcessors,
+                jApiClasses)
         generic.processOutput()
     }
 

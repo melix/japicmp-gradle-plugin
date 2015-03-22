@@ -5,6 +5,7 @@ import japicmp.model.JApiChangeStatus
 class OutputProcessorBuilder {
     final List<Closure> classProcessors = []
     final List<Closure> methodProcessors = []
+    final List<Closure> constructorProcessors = []
     final List<Closure> beforeProcessors = []
     final List<Closure> afterProcessors = []
 
@@ -45,13 +46,16 @@ class OutputProcessorBuilder {
             def arg = args[0]
             def isClass = name.endsWith('Class')
             def isMethod = name.endsWith('Method')
-            if (arg instanceof Closure && (isClass || isMethod)) {
-                String status = isClass ? name - 'Class' : name - 'Method'
+            def isCtor = name.endsWith('Constructor')
+            if (arg instanceof Closure && (isClass || isMethod || isCtor)) {
+                String status = isClass ? name - 'Class' : isMethod? name - 'Method' : name - 'Constructor'
                 def cl = doWrap(arg, JApiChangeStatus.valueOf(status.toUpperCase()))
                 if (isClass) {
                     classProcessors << cl
-                } else {
+                } else if (isMethod) {
                     methodProcessors << cl
+                } else {
+                    constructorProcessors << cl
                 }
                 return null
             }

@@ -23,6 +23,8 @@ import org.gradle.api.Project
  * @author Cedric Champeau
  */
 class JapicmpPlugin implements Plugin<Project> {
-    void apply(Project project) {
+    void apply(Project project) {project.configurations.create('japicmp') {
+            extendsFrom(project.configurations.compile)
+        }
     }
 }

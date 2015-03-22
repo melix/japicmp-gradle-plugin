@@ -111,9 +111,12 @@ The `outputProcessor` block supports the following hooks:
 |modifiedClass |JApiClass |A class has been modified
 |removedClass |JApiClass |A class has been removed
 |unchangedMethod |(JApiMethod) or (JApiClass,JApiMethod) |Called on an unchanged method, unless onlyModified is true
+|unchangedConstructor |(JApiConstructor) or (JApiClass,JApiConstructor) |Called on an unchanged constructor, unless onlyModified is true
 |newMethod |(JApiMethod) or (JApiClass,JApiMethod) |A method has been added
 |modifiedMethod |(JApiMethod) or (JApiClass,JApiMethod) |A method has been modified
+|modifiedConstructor |(JApiConstructor) or (JApiClass,JApiConstructor) |A constructor has been modified
 |removedMethod |(JApiMethod) or (JApiClass,JApiMethod) |A method has been removed
+|removedConstructor |(JApiConstructor) or (JApiClass,JApiConstructor) |A method has been removed
 |before |List<JApiClass> | Called before iteration on classes is triggered
 |after |List<JApiClass> | Called after iteration on classes is triggered
 |======================
