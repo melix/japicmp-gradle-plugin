@@ -42,6 +42,7 @@ packagesToExclude:: List of package names to exclude, * can be used as wildcard.
 accessModifier:: Sets the access modifier level (public, package, protected, private). Type: _String_. Default value: _public_
 failOnModification:: When set to true, the build fails in case a modification has been detected. Type: _boolean_. Default value: _false_
 xmlOutputFile:: Path to the generated XML report. Type: _File_. Default value: _null_
+htmlOutputFile:: Path to the generated HTML report (requires `xmlOutputFile` to be set). Type: _File_. Default value: _null_
 txtOutputFile:: Path to the generated TXT report. Type: _File_. Default value: _null_
 
 == Usage

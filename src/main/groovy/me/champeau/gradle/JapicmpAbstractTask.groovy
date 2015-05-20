@@ -15,6 +15,7 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
 import org.gradle.api.tasks.Optional
+import com.google.common.base.Optional as GOptional
 
 abstract class JapicmpAbstractTask extends AbstractTask {
     private final static Closure<Boolean> DEFAULT_BREAK_BUILD_CHECK = { it.changeStatus != JApiChangeStatus.UNCHANGED }
@@ -33,7 +34,6 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     
     @Input
     @Optional 
-    
     boolean onlyModified = false
     
     @OutputFile
@@ -41,7 +41,12 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     File xmlOutputFile
 
     @OutputFile
-    @Optional File txtOutputFile
+    @Optional
+    File txtOutputFile
+
+    @OutputFile
+    @Optional
+    File htmlOutputFile
 
     @Input
     @Optional
@@ -93,9 +98,11 @@ abstract class JapicmpAbstractTask extends AbstractTask {
         def options = new Options()
         options.outputOnlyModifications = onlyModified
         options.setAccessModifier(AccessModifier.valueOf(accessModifier.toUpperCase()))
+        options.htmlOutputFile = GOptional.fromNullable(htmlOutputFile?.absolutePath)
         if (xmlOutputFile) {
+            options.xmlOutputFile = GOptional.of(xmlOutputFile.absolutePath)
             def xmlOutputGenerator = new XmlOutputGenerator()
-            xmlOutputGenerator.generate(getOldArchive(), getNewArchive(), jApiClasses, options)
+            xmlOutputGenerator.generate(getOldArchive().absolutePath, getNewArchive().absolutePath, jApiClasses, options)
         }
         if (txtOutputFile) {
             StdoutOutputGenerator stdoutOutputGenerator = new StdoutOutputGenerator(options)
