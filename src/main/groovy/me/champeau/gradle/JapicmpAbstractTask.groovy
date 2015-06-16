@@ -3,7 +3,7 @@ package me.champeau.gradle
 import japicmp.cmp.JarArchiveComparator
 import japicmp.cmp.JarArchiveComparatorOptions
 import japicmp.config.Options
-import japicmp.config.PackageFilter
+import japicmp.filter.PackageFilter
 import japicmp.model.AccessModifier
 import japicmp.model.JApiChangeStatus
 import japicmp.model.JApiClass
@@ -20,24 +20,23 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     private final static Closure<Boolean> DEFAULT_BREAK_BUILD_CHECK = { it.changeStatus != JApiChangeStatus.UNCHANGED }
 
     @Input
-    @Optional 
+    @Optional
     List<String> packageIncludes = []
-    
+
     @Input
-    @Optional 
+    @Optional
     List<String> packageExcludes = []
-    
+
     @Input
     @Optional
     String accessModifier = 'public'
-    
+
     @Input
-    @Optional 
-    
+    @Optional
     boolean onlyModified = false
-    
+
     @OutputFile
-    @Optional 
+    @Optional
     File xmlOutputFile
 
     @OutputFile
