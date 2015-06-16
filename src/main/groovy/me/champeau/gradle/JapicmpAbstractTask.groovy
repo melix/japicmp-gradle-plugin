@@ -50,6 +50,10 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     @Optional
     Collection<File> classpath = null
 
+    @Input
+    @Optional
+    boolean includeSynthetic = false
+
     private final OutputProcessorBuilder builder = new OutputProcessorBuilder(this)
 
     abstract File getOldArchive()
@@ -74,6 +78,7 @@ abstract class JapicmpAbstractTask extends AbstractTask {
 
     private JarArchiveComparatorOptions createOptions() {
         def options = new JarArchiveComparatorOptions()
+        options.includeSynthetic = includeSynthetic
         options.with {
             packagesInclude.addAll(packageIncludes.collect { new PackageFilter(it) })
             packagesExclude.addAll(packageExcludes.collect { new PackageFilter(it) })
@@ -91,6 +96,7 @@ abstract class JapicmpAbstractTask extends AbstractTask {
         // we create a dummy options because we don't want to avoid use of internal classes of JApicmp
         def options = new Options()
         options.outputOnlyModifications = onlyModified
+        options.includeSynthetic = includeSynthetic
         options.setAccessModifier(AccessModifier.valueOf(accessModifier.toUpperCase()))
         if (xmlOutputFile) {
             def xmlOutputGenerator = new XmlOutputGenerator()
