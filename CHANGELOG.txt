@@ -2,3 +2,6 @@
 -----
    * Upgrade to Gradle 2.3
    * Upgrade to JApiCmp 0.3.1
+0.1.2
+-----
+   * Upgrade to JApiCmp 0.5.0

@@ -3,7 +3,7 @@ package me.champeau.gradle
 import japicmp.cmp.JarArchiveComparator
 import japicmp.cmp.JarArchiveComparatorOptions
 import japicmp.config.Options
-import japicmp.config.PackageFilter
+import japicmp.filter.PackageFilter
 import japicmp.model.AccessModifier
 import japicmp.model.JApiChangeStatus
 import japicmp.model.JApiClass
@@ -20,24 +20,23 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     private final static Closure<Boolean> DEFAULT_BREAK_BUILD_CHECK = { it.changeStatus != JApiChangeStatus.UNCHANGED }
 
     @Input
-    @Optional 
+    @Optional
     List<String> packageIncludes = []
-    
+
     @Input
-    @Optional 
+    @Optional
     List<String> packageExcludes = []
-    
+
     @Input
     @Optional
     String accessModifier = 'public'
-    
+
     @Input
-    @Optional 
-    
+    @Optional
     boolean onlyModified = false
-    
+
     @OutputFile
-    @Optional 
+    @Optional
     File xmlOutputFile
 
     @OutputFile
@@ -50,6 +49,10 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     @Input
     @Optional
     Collection<File> classpath = null
+
+    @Input
+    @Optional
+    boolean includeSynthetic = false
 
     private final OutputProcessorBuilder builder = new OutputProcessorBuilder(this)
 
@@ -75,6 +78,7 @@ abstract class JapicmpAbstractTask extends AbstractTask {
 
     private JarArchiveComparatorOptions createOptions() {
         def options = new JarArchiveComparatorOptions()
+        options.includeSynthetic = includeSynthetic
         options.with {
             packagesInclude.addAll(packageIncludes.collect { new PackageFilter(it) })
             packagesExclude.addAll(packageExcludes.collect { new PackageFilter(it) })
@@ -92,6 +96,7 @@ abstract class JapicmpAbstractTask extends AbstractTask {
         // we create a dummy options because we don't want to avoid use of internal classes of JApicmp
         def options = new Options()
         options.outputOnlyModifications = onlyModified
+        options.includeSynthetic = includeSynthetic
         options.setAccessModifier(AccessModifier.valueOf(accessModifier.toUpperCase()))
         if (xmlOutputFile) {
             def xmlOutputGenerator = new XmlOutputGenerator()

@@ -43,6 +43,7 @@ accessModifier:: Sets the access modifier level (public, package, protected, pri
 failOnModification:: When set to true, the build fails in case a modification has been detected. Type: _boolean_. Default value: _false_
 xmlOutputFile:: Path to the generated XML report. Type: _File_. Default value: _null_
 txtOutputFile:: Path to the generated TXT report. Type: _File_. Default value: _null_
+includeSynthetic:: Synthetic classes and class members (like e.g. bridge methods) are not tracked per default. This new option enables the tracking of such kind of classes and class members
 
 == Usage
 
