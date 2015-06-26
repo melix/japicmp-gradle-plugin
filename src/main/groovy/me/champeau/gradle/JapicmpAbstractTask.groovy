@@ -80,8 +80,8 @@ abstract class JapicmpAbstractTask extends AbstractTask {
         def options = new JarArchiveComparatorOptions()
         options.includeSynthetic = includeSynthetic
         options.with {
-            packagesInclude.addAll(packageIncludes.collect { new PackageFilter(it) })
-            packagesExclude.addAll(packageExcludes.collect { new PackageFilter(it) })
+            filters.includes.addAll(packageIncludes.collect { new PackageFilter(it) })
+            filters.excludes.addAll(packageExcludes.collect { new PackageFilter(it) })
             Collection<File> files = classpath ?: project.configurations.japicmp.files
             files.each {
                 if (it.exists()) {
@@ -103,8 +103,8 @@ abstract class JapicmpAbstractTask extends AbstractTask {
             xmlOutputGenerator.generate(getOldArchive(), getNewArchive(), jApiClasses, options)
         }
         if (txtOutputFile) {
-            StdoutOutputGenerator stdoutOutputGenerator = new StdoutOutputGenerator(options)
-            String output = stdoutOutputGenerator.generate(getOldArchive(), getNewArchive(), jApiClasses)
+            StdoutOutputGenerator stdoutOutputGenerator = new StdoutOutputGenerator(options, jApiClasses, getOldArchive(), getNewArchive())
+            String output = stdoutOutputGenerator.generate()
             txtOutputFile.write(output)
         }
         def generic = new GenericOutputProcessor(
