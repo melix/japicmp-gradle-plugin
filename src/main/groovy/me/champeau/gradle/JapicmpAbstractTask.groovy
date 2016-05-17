@@ -37,9 +37,17 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     @Optional
     boolean onlyModified = false
 
+    @Input
+    @Optional
+    boolean onlyBinaryIncompatibleModified = false
+
     @OutputFile
     @Optional
     File xmlOutputFile
+
+    @OutputFile
+    @Optional
+    File htmlOutputFile
 
     @OutputFile
     @Optional File txtOutputFile
@@ -100,10 +108,16 @@ abstract class JapicmpAbstractTask extends AbstractTask {
         options.oldArchives.add(getOldArchive())
         options.newArchives.add(getNewArchive())
         options.outputOnlyModifications = onlyModified
+        options.outputOnlyBinaryIncompatibleModifications = onlyBinaryIncompatibleModified
         options.includeSynthetic = includeSynthetic
         options.setAccessModifier(AccessModifier.valueOf(accessModifier.toUpperCase()))
         if (xmlOutputFile) {
             options.xmlOutputFile = com.google.common.base.Optional.of(xmlOutputFile.getAbsolutePath())
+        }
+        if (htmlOutputFile) {
+            options.htmlOutputFile = com.google.common.base.Optional.of(htmlOutputFile.getAbsolutePath())
+        }
+        if (xmlOutputFile || htmlOutputFile) {
             def xmlOptions = new XmlOutputGeneratorOptions()
             def xmlOutputGenerator = new XmlOutputGenerator(jApiClasses, options, xmlOptions)
             XmlOutput xmlOutput = xmlOutputGenerator.generate()
