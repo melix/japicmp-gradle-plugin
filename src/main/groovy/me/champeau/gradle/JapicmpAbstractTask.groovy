@@ -3,12 +3,14 @@ package me.champeau.gradle
 import japicmp.cmp.JarArchiveComparator
 import japicmp.cmp.JarArchiveComparatorOptions
 import japicmp.config.Options
-import japicmp.filter.PackageFilter
+import japicmp.filter.JavadocLikePackageFilter
 import japicmp.model.AccessModifier
 import japicmp.model.JApiChangeStatus
 import japicmp.model.JApiClass
 import japicmp.output.stdout.StdoutOutputGenerator
+import japicmp.output.xml.XmlOutput
 import japicmp.output.xml.XmlOutputGenerator
+import japicmp.output.xml.XmlOutputGeneratorOptions
 import org.gradle.api.GradleException
 import org.gradle.api.internal.AbstractTask
 import org.gradle.api.tasks.Input
@@ -35,9 +37,17 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     @Optional
     boolean onlyModified = false
 
+    @Input
+    @Optional
+    boolean onlyBinaryIncompatibleModified = false
+
     @OutputFile
     @Optional
     File xmlOutputFile
+
+    @OutputFile
+    @Optional
+    File htmlOutputFile
 
     @OutputFile
     @Optional File txtOutputFile
@@ -80,8 +90,8 @@ abstract class JapicmpAbstractTask extends AbstractTask {
         def options = new JarArchiveComparatorOptions()
         options.includeSynthetic = includeSynthetic
         options.with {
-            packagesInclude.addAll(packageIncludes.collect { new PackageFilter(it) })
-            packagesExclude.addAll(packageExcludes.collect { new PackageFilter(it) })
+            filters.getIncludes().addAll(packageIncludes.collect { new JavadocLikePackageFilter(it) })
+            filters.getExcludes().addAll(packageExcludes.collect { new JavadocLikePackageFilter(it) })
             Collection<File> files = classpath ?: project.configurations.japicmp.files
             files.each {
                 if (it.exists()) {
@@ -95,16 +105,27 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     private void generateOutput(final List<JApiClass> jApiClasses) {
         // we create a dummy options because we don't want to avoid use of internal classes of JApicmp
         def options = new Options()
+        options.oldArchives.add(getOldArchive())
+        options.newArchives.add(getNewArchive())
         options.outputOnlyModifications = onlyModified
+        options.outputOnlyBinaryIncompatibleModifications = onlyBinaryIncompatibleModified
         options.includeSynthetic = includeSynthetic
         options.setAccessModifier(AccessModifier.valueOf(accessModifier.toUpperCase()))
         if (xmlOutputFile) {
-            def xmlOutputGenerator = new XmlOutputGenerator()
-            xmlOutputGenerator.generate(getOldArchive(), getNewArchive(), jApiClasses, options)
+            options.xmlOutputFile = com.google.common.base.Optional.of(xmlOutputFile.getAbsolutePath())
+        }
+        if (htmlOutputFile) {
+            options.htmlOutputFile = com.google.common.base.Optional.of(htmlOutputFile.getAbsolutePath())
+        }
+        if (xmlOutputFile || htmlOutputFile) {
+            def xmlOptions = new XmlOutputGeneratorOptions()
+            def xmlOutputGenerator = new XmlOutputGenerator(jApiClasses, options, xmlOptions)
+            XmlOutput xmlOutput = xmlOutputGenerator.generate()
+            XmlOutputGenerator.writeToFiles(options, xmlOutput)
         }
         if (txtOutputFile) {
-            StdoutOutputGenerator stdoutOutputGenerator = new StdoutOutputGenerator(options)
-            String output = stdoutOutputGenerator.generate(getOldArchive(), getNewArchive(), jApiClasses)
+            StdoutOutputGenerator stdoutOutputGenerator = new StdoutOutputGenerator(options, jApiClasses)
+            String output = stdoutOutputGenerator.generate()
             txtOutputFile.write(output)
         }
         def generic = new GenericOutputProcessor(
