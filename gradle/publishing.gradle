@@ -15,7 +15,7 @@ pluginBundle {
 
     plugins {
         japicmpPlugin {
-            id = 'me.champeau.gradle.japicmp.properties'
+            id = 'me.champeau.gradle.japicmp'
             displayName = 'Gradle Plugin for JApicmp'
         }
     }
