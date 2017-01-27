@@ -21,7 +21,7 @@ repositories {
 }
 
 dependencies {
-    compile('com.github.siom79.japicmp:japicmp:0.7.2') {
+    compile('com.github.siom79.japicmp:japicmp:0.9.3') {
         exclude group:'com.google.guava'
         exclude group:'io.airlift'
     }
