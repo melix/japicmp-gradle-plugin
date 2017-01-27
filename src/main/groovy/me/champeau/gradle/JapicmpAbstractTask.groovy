@@ -14,9 +14,12 @@ import japicmp.output.xml.XmlOutputGeneratorOptions
 import org.gradle.api.GradleException
 import org.gradle.api.internal.AbstractTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.OutputFile
 import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.Optional
+
+import static japicmp.cmp.JarArchiveComparatorOptions.ClassPathMode.ONE_COMMON_CLASSPATH
+import static japicmp.cmp.JarArchiveComparatorOptions.ClassPathMode.TWO_SEPARATE_CLASSPATHS
 
 abstract class JapicmpAbstractTask extends AbstractTask {
     private final static Closure<Boolean> DEFAULT_BREAK_BUILD_CHECK = { it.changeStatus != JApiChangeStatus.UNCHANGED }
@@ -36,6 +39,10 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     @Input
     @Optional
     boolean onlyModified = false
+
+    @Input
+    @Optional
+    boolean noAnnotations = false
 
     @Input
     @Optional
@@ -62,8 +69,16 @@ abstract class JapicmpAbstractTask extends AbstractTask {
 
     @Input
     @Optional
-    boolean includeSynthetic = false
+    Collection<File> oldClasspath = null
 
+    @Input
+    @Optional
+    boolean ignoreAllMissingClasses = false
+
+    @Input
+    @Optional
+    boolean includeSynthetic = false
+    
     private final OutputProcessorBuilder builder = new OutputProcessorBuilder(this)
 
     abstract File getOldArchive()
@@ -89,16 +104,20 @@ abstract class JapicmpAbstractTask extends AbstractTask {
     private JarArchiveComparatorOptions createOptions() {
         def options = new JarArchiveComparatorOptions()
         options.includeSynthetic = includeSynthetic
-        options.with {
-            filters.getIncludes().addAll(packageIncludes.collect { new JavadocLikePackageFilter(it) })
-            filters.getExcludes().addAll(packageExcludes.collect { new JavadocLikePackageFilter(it) })
-            Collection<File> files = classpath ?: project.configurations.japicmp.files
-            files.each {
-                if (it.exists()) {
-                    classPathEntries.add(it.absolutePath)
-                }
-            }
+        options.ignoreMissingClasses.ignoreAllMissingClasses = ignoreAllMissingClasses
+        options.noAnnotations = noAnnotations
+        options.filters.getIncludes().addAll(packageIncludes.collect { new JavadocLikePackageFilter(it) })
+        options.filters.getExcludes().addAll(packageExcludes.collect { new JavadocLikePackageFilter(it) })
+
+        if (oldClasspath) {
+            options.oldClassPath = oldClasspath*.absolutePath
+            options.classPathMode = TWO_SEPARATE_CLASSPATHS
+        } else {
+            options.classPathMode = ONE_COMMON_CLASSPATH
         }
+        Collection<File> files = classpath ?: project.configurations.japicmp.files
+        options.newClassPath = files.findAll{it.isFile()}*.absolutePath
+
         options
     }
 
