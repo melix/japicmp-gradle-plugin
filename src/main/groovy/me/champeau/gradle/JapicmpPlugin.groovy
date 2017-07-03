@@ -15,16 +15,16 @@
  */
 package me.champeau.gradle
 
+import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-
 /**
  *
  * @author Cedric Champeau
  */
+@CompileStatic
 class JapicmpPlugin implements Plugin<Project> {
-    void apply(Project project) {project.configurations.create('japicmp') {
-            extendsFrom(project.configurations.compile)
-        }
+    void apply(Project project) {
+
     }
 }

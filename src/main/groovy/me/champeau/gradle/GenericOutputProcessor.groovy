@@ -1,8 +1,10 @@
 package me.champeau.gradle
 
+import groovy.transform.CompileStatic
 import japicmp.model.JApiClass
 
-public class GenericOutputProcessor {
+@CompileStatic
+class GenericOutputProcessor {
 
     private final List<JApiClass> jApiClasses
     private final List<Closure> classVisitors

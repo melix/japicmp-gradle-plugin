@@ -15,13 +15,7 @@
  */
 package me.champeau.gradle
 
-import org.gradle.api.tasks.InputFile
-
 class JapicmpTask extends JapicmpAbstractTask {
-    @InputFile
-    File oldArchive
 
-    @InputFile
-    File newArchive
 
 }

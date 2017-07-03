@@ -1,0 +1,35 @@
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "me.champeau.gradle:japicmp-gradle-plugin:0.1.2"
+  }
+}
+
+apply plugin: "me.champeau.gradle.japicmp"
+
+configurations {
+   baseline
+   current
+}
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+   baseline 'org.apache.commons:commons-lang3:3.5'
+   current 'org.apache.commons:commons-lang3:3.6'
+}
+
+task japicmp(type: me.champeau.gradle.JapicmpTask) {
+    oldClasspath = configurations.baseline
+    newClasspath = configurations.current
+    onlyModified = true
+    failOnModification = true
+    txtOutputFile = file("$buildDir/reports/japi.txt")
+    ignoreMissingClasses = true
+}

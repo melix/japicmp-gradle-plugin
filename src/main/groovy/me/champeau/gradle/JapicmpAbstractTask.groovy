@@ -1,25 +1,27 @@
 package me.champeau.gradle
 
+import groovy.transform.CompileStatic
+import japicmp.cmp.JApiCmpArchive
 import japicmp.cmp.JarArchiveComparator
 import japicmp.cmp.JarArchiveComparatorOptions
 import japicmp.config.Options
 import japicmp.filter.JavadocLikePackageFilter
 import japicmp.model.AccessModifier
-import japicmp.model.JApiChangeStatus
 import japicmp.model.JApiClass
 import japicmp.output.stdout.StdoutOutputGenerator
 import japicmp.output.xml.XmlOutput
 import japicmp.output.xml.XmlOutputGenerator
 import japicmp.output.xml.XmlOutputGeneratorOptions
 import org.gradle.api.GradleException
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ResolvedDependency
+import org.gradle.api.file.FileCollection
 import org.gradle.api.internal.AbstractTask
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.OutputFile
-import org.gradle.api.tasks.TaskAction
-import org.gradle.api.tasks.Optional
+import org.gradle.api.tasks.*
 
+@CompileStatic
 abstract class JapicmpAbstractTask extends AbstractTask {
-    private final static Closure<Boolean> DEFAULT_BREAK_BUILD_CHECK = { it.changeStatus != JApiChangeStatus.UNCHANGED }
+    private final static Closure<Boolean> DEFAULT_BREAK_BUILD_CHECK = { JApiClass it -> !it.binaryCompatible }
 
     @Input
     @Optional
@@ -58,55 +60,69 @@ abstract class JapicmpAbstractTask extends AbstractTask {
 
     @Input
     @Optional
-    Collection<File> classpath = null
-
-    @Input
-    @Optional
     boolean includeSynthetic = false
 
+    @Input
+    @CompileClasspath
+    FileCollection oldClasspath
+
+    @Input
+    @CompileClasspath
+    FileCollection newClasspath
+
+    @Optional
+    @Input
+    boolean ignoreMissingClasses = false
+
     private final OutputProcessorBuilder builder = new OutputProcessorBuilder(this)
-
-    abstract File getOldArchive()
-
-    abstract File getNewArchive()
 
     @TaskAction
     void exec() {
         def comparatorOptions = createOptions()
         def jarArchiveComparator = new JarArchiveComparator(comparatorOptions)
-        def jApiClasses = jarArchiveComparator.compare(getOldArchive(), getNewArchive())
-        generateOutput(jApiClasses)
-        breakBuildIfNecessary(jApiClasses)
-    }
-
-    private void breakBuildIfNecessary(final List<JApiClass> jApiClasses) {
-        // todo: provide custom checks
-        if (failOnModification && jApiClasses.any(DEFAULT_BREAK_BUILD_CHECK)) {
-            throw new GradleException("${newArchive} contains binary changes")
-        }
+        generateOutput(jarArchiveComparator)
     }
 
     private JarArchiveComparatorOptions createOptions() {
         def options = new JarArchiveComparatorOptions()
+        options.classPathMode = JarArchiveComparatorOptions.ClassPathMode.TWO_SEPARATE_CLASSPATHS
         options.includeSynthetic = includeSynthetic
+        options.ignoreMissingClasses.setIgnoreAllMissingClasses(ignoreMissingClasses)
         options.with {
             filters.getIncludes().addAll(packageIncludes.collect { new JavadocLikePackageFilter(it) })
             filters.getExcludes().addAll(packageExcludes.collect { new JavadocLikePackageFilter(it) })
-            Collection<File> files = classpath ?: project.configurations.japicmp.files
-            files.each {
-                if (it.exists()) {
-                    classPathEntries.add(it.absolutePath)
-                }
-            }
         }
         options
     }
 
-    private void generateOutput(final List<JApiClass> jApiClasses) {
+    private List<JApiCmpArchive> toArchives(FileCollection fc) {
+        List<JApiCmpArchive> archives = []
+        if (fc instanceof Configuration) {
+            fc.resolvedConfiguration.firstLevelModuleDependencies.each {
+                collectArchives(archives, it)
+            }
+        } else {
+            fc.files.collect(archives) {
+                new JApiCmpArchive(it, '1.0')
+            }
+        }
+        archives
+    }
+
+    void collectArchives(List<JApiCmpArchive> archives, ResolvedDependency resolvedDependency) {
+        archives << new JApiCmpArchive(resolvedDependency.allModuleArtifacts.first().file, resolvedDependency.module.id.version)
+        resolvedDependency.children.each {
+            collectArchives(archives, it)
+        }
+    }
+
+
+    private List<JApiClass> generateOutput(JarArchiveComparator jarArchiveComparator) {
         // we create a dummy options because we don't want to avoid use of internal classes of JApicmp
-        def options = new Options()
-        options.oldArchives.add(getOldArchive())
-        options.newArchives.add(getNewArchive())
+        def options = Options.newDefault()
+        options.oldClassPath = com.google.common.base.Optional.of(oldClasspath.asPath)
+        options.newClassPath = com.google.common.base.Optional.of(newClasspath.asPath)
+        List<JApiClass> jApiClasses = jarArchiveComparator.compare(toArchives(oldClasspath), toArchives(newClasspath))
         options.outputOnlyModifications = onlyModified
         options.outputOnlyBinaryIncompatibleModifications = onlyBinaryIncompatibleModified
         options.includeSynthetic = includeSynthetic
@@ -136,10 +152,16 @@ abstract class JapicmpAbstractTask extends AbstractTask {
                 builder.afterProcessors,
                 jApiClasses)
         generic.processOutput()
+
+        if (failOnModification && jApiClasses.any(DEFAULT_BREAK_BUILD_CHECK)) {
+            throw new GradleException("Detected binary changes between ${toArchives(oldClasspath)*.file.name} and ${toArchives(newClasspath)*.file.name}")
+        }
+
+        jApiClasses
     }
 
-    public void outputProcessor(@DelegatesTo(OutputProcessorBuilder) Closure spec) {
-        def copy = spec.clone()
+    void outputProcessor(@DelegatesTo(OutputProcessorBuilder) Closure spec) {
+        Closure copy = (Closure) spec.clone()
         copy.delegate = builder
         copy()
     }
