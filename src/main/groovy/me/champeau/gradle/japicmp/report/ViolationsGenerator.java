@@ -49,7 +49,7 @@ public class ViolationsGenerator {
     public void addRule(JApiCompatibilityChange change, ViolationRule rule) {
         List<ViolationRule> violationRules = apiCompatibilityRules.get(change);
         if (violationRules == null) {
-            violationRules = new ArrayList<ViolationRule>();
+            violationRules = new ArrayList<>();
             apiCompatibilityRules.put(change, violationRules);
         }
         violationRules.add(rule);
@@ -58,7 +58,7 @@ public class ViolationsGenerator {
     public void addRule(JApiChangeStatus status, ViolationRule rule) {
         List<ViolationRule> violationRules = statusRules.get(status);
         if (violationRules == null) {
-            violationRules = new ArrayList<ViolationRule>();
+            violationRules = new ArrayList<>();
             statusRules.put(status, violationRules);
         }
         violationRules.add(rule);

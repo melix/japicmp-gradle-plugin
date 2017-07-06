@@ -1,24 +1,9 @@
 package me.champeau.gradle.japicmp;
 
-import japicmp.cmp.JApiCmpArchive;
-import japicmp.cmp.JarArchiveComparator;
-import japicmp.cmp.JarArchiveComparatorOptions;
-import japicmp.config.Options;
-import japicmp.filter.JavadocLikePackageFilter;
-import japicmp.model.AccessModifier;
-import japicmp.model.JApiClass;
-import japicmp.output.stdout.StdoutOutputGenerator;
-import japicmp.output.xml.XmlOutput;
-import japicmp.output.xml.XmlOutputGenerator;
-import japicmp.output.xml.XmlOutputGeneratorOptions;
 import me.champeau.gradle.japicmp.report.RichReport;
-import me.champeau.gradle.japicmp.report.RichReportData;
-import me.champeau.gradle.japicmp.report.Severity;
-import me.champeau.gradle.japicmp.report.Violation;
+import me.champeau.gradle.japicmp.report.ViolationRuleConfiguration;
 import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
-import org.gradle.api.GradleException;
-import org.gradle.api.Transformer;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.file.FileCollection;
@@ -28,17 +13,18 @@ import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.workers.IsolationMode;
+import org.gradle.workers.WorkerConfiguration;
+import org.gradle.workers.WorkerExecutor;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.net.URISyntaxException;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 public class JapicmpTask extends DefaultTask {
 
@@ -61,28 +47,58 @@ public class JapicmpTask extends DefaultTask {
 
     @TaskAction
     public void exec() {
-        JarArchiveComparatorOptions comparatorOptions = createOptions();
-        JarArchiveComparator jarArchiveComparator = new JarArchiveComparator(comparatorOptions);
-        generateOutput(jarArchiveComparator);
+        WorkerExecutor workerExecutor = getServices().get(WorkerExecutor.class);
+        workerExecutor.submit(JApiCmpWorkerAction.class, new Action<WorkerConfiguration>() {
+            @Override
+            public void execute(final WorkerConfiguration workerConfiguration) {
+                workerConfiguration.setIsolationMode(IsolationMode.CLASSLOADER);
+                Set<File> classpath = new HashSet<>();
+                for (ViolationRuleConfiguration configuration : richReport.getRules()) {
+                    ProtectionDomain domain = configuration.getRuleClass().getProtectionDomain();
+                    CodeSource codeSource = domain.getCodeSource();
+                    if (codeSource != null) {
+                        try {
+                            classpath.add(new File(codeSource.getLocation().toURI()));
+                        } catch (URISyntaxException e) {
+                            // silent
+                        }
+                    }
+                }
+                workerConfiguration.setClasspath(classpath);
+                List<JApiCmpWorkerAction.Archive> baseline = JapicmpTask.this.oldArchives != null ? toArchives(JapicmpTask.this.oldArchives) : inferArchives(oldClasspath);
+                List<JApiCmpWorkerAction.Archive> current = JapicmpTask.this.newArchives != null ? toArchives(JapicmpTask.this.newArchives) : inferArchives(newClasspath);
+                workerConfiguration.setDisplayName("Comparing " + current + " with " + baseline);
+                workerConfiguration.params(
+                        // we use a single configuration object, instead of passing each parameter directly,
+                        // because the worker API doesn't support "null" values
+                        new JapiCmpWorkerConfiguration(
+                                getIncludeSynthetic(),
+                                getIgnoreMissingClasses(),
+                                getPackageIncludes(),
+                                getPackageExcludes(),
+                                toArchives(getOldClasspath()),
+                                toArchives(getNewClasspath()),
+                                baseline,
+                                current,
+                                getOnlyModified(),
+                                getOnlyBinaryIncompatibleModified(),
+                                getAccessModifier(),
+                                getXmlOutputFile(),
+                                getHtmlOutputFile(),
+                                getTxtOutputFile(),
+                                getFailOnModification(),
+                                getProject().getBuildDir(),
+                                richReport
+                        )
+                );
+            }
+        });
+
     }
 
-    private JarArchiveComparatorOptions createOptions() {
-        JarArchiveComparatorOptions options = new JarArchiveComparatorOptions();
-        options.setClassPathMode(JarArchiveComparatorOptions.ClassPathMode.TWO_SEPARATE_CLASSPATHS);
-        options.setIncludeSynthetic(getIncludeSynthetic());
-        options.getIgnoreMissingClasses().setIgnoreAllMissingClasses(getIgnoreMissingClasses());
-        for (String packageInclude : getPackageIncludes()) {
-            options.getFilters().getIncludes().add(new JavadocLikePackageFilter(packageInclude));
-        }
-        for (String packageExclude : getPackageExcludes()) {
-            options.getFilters().getExcludes().add(new JavadocLikePackageFilter(packageExclude));
-        }
-        return options;
-    }
-
-    private List<JApiCmpArchive> inferArchives(FileCollection fc) {
+    private List<JApiCmpWorkerAction.Archive> inferArchives(FileCollection fc) {
         if (fc instanceof Configuration) {
-            final List<JApiCmpArchive> archives = new ArrayList<>();
+            final List<JApiCmpWorkerAction.Archive> archives = new ArrayList<>();
             Set<ResolvedDependency> firstLevelModuleDependencies = ((Configuration) fc).getResolvedConfiguration().getFirstLevelModuleDependencies();
             for (ResolvedDependency moduleDependency : firstLevelModuleDependencies) {
                 collectArchives(archives, moduleDependency);
@@ -90,145 +106,29 @@ public class JapicmpTask extends DefaultTask {
             return archives;
         }
 
-        return toJApiCmpArchives(fc);
+        return toArchives(fc);
     }
 
-    private static List<JApiCmpArchive> toJApiCmpArchives(FileCollection fc) {
+    private static List<JApiCmpWorkerAction.Archive> toArchives(FileCollection fc) {
         Set<File> files = fc.getFiles();
-        List<JApiCmpArchive> archives = new ArrayList<>(files.size());
+        List<JApiCmpWorkerAction.Archive> archives = new ArrayList<>(files.size());
         for (File file : files) {
-            archives.add(new JApiCmpArchive(file, "1.0"));
+            archives.add(new JApiCmpWorkerAction.Archive(file, "1.0"));
         }
         return archives;
     }
 
-    private void collectArchives(final List<JApiCmpArchive> archives, ResolvedDependency resolvedDependency) {
+    private void collectArchives(final List<JApiCmpWorkerAction.Archive> archives, ResolvedDependency resolvedDependency) {
         String version = resolvedDependency.getModule().getId().getVersion();
-        archives.add(new JApiCmpArchive(resolvedDependency.getAllModuleArtifacts().iterator().next().getFile(), version));
+        archives.add(new JApiCmpWorkerAction.Archive(resolvedDependency.getAllModuleArtifacts().iterator().next().getFile(), version));
         for (ResolvedDependency dependency : resolvedDependency.getChildren()) {
             collectArchives(archives, dependency);
         }
     }
 
-    private static String prettyPrint(List<JApiCmpArchive> archives) {
-        StringBuilder sb = new StringBuilder();
-        for (JApiCmpArchive archive : archives) {
-            if (sb.length() > 0) {
-                sb.append(", ");
-            }
-            sb.append(archive.getFile().getName());
-        }
-        return sb.toString();
-    }
-
-    private static boolean matches(String pattern, String className) {
-        return Pattern.compile(pattern).matcher(className).find();
-    }
-
-    private void generateOutput(JarArchiveComparator jarArchiveComparator) {
-        // we create a dummy options because we don't want to avoid use of internal classes of JApicmp
-        Options options = Options.newDefault();
-        options.setOldClassPath(com.google.common.base.Optional.of(oldClasspath.getAsPath()));
-        options.setNewClassPath(com.google.common.base.Optional.of(newClasspath.getAsPath()));
-        final List<JApiCmpArchive> baseline = oldArchives!=null ? toJApiCmpArchives(oldArchives) : inferArchives(oldClasspath);
-        final List<JApiCmpArchive> current = newArchives!=null ? toJApiCmpArchives(newArchives) : inferArchives(newClasspath);
-        System.out.println("Comparing " + prettyPrint(current) + " to " + prettyPrint(baseline));
-        List<JApiClass> jApiClasses = jarArchiveComparator.compare(baseline, current);
-        options.setOutputOnlyModifications(onlyModified);
-        options.setOutputOnlyBinaryIncompatibleModifications(onlyBinaryIncompatibleModified);
-        options.setIncludeSynthetic(includeSynthetic);
-        options.setAccessModifier(AccessModifier.valueOf(accessModifier.toUpperCase()));
-        if (xmlOutputFile != null) {
-            options.setXmlOutputFile(com.google.common.base.Optional.of(xmlOutputFile.getAbsolutePath()));
-        }
-
-        if (htmlOutputFile != null) {
-            options.setHtmlOutputFile(com.google.common.base.Optional.of(htmlOutputFile.getAbsolutePath()));
-        }
-
-        if (xmlOutputFile != null || htmlOutputFile != null) {
-            XmlOutputGeneratorOptions xmlOptions = new XmlOutputGeneratorOptions();
-            XmlOutputGenerator xmlOutputGenerator = new XmlOutputGenerator(jApiClasses, options, xmlOptions);
-            XmlOutput xmlOutput = xmlOutputGenerator.generate();
-            XmlOutputGenerator.writeToFiles(options, xmlOutput);
-        }
-
-        if (txtOutputFile != null) {
-            StdoutOutputGenerator stdoutOutputGenerator = new StdoutOutputGenerator(options, jApiClasses);
-            String output = stdoutOutputGenerator.generate();
-            try (BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(txtOutputFile), "utf-8")
-            )) {
-                writer.write(output);
-            } catch (IOException ex) {
-                throw new GradleException("Unable to write report", ex);
-            }
-        }
-
-        boolean hasCustomViolations = false;
-        if (richReport != null) {
-            final List<String> includedClasses = richReport.getIncludedClasses();
-            final List<String> excludedClasses = richReport.getExcludedClasses();
-            if (includedClasses != null) {
-                richReport.getViolationsGenerator().setClassFilter(
-                        new Transformer<Boolean, String>() {
-                            @Override
-                            public Boolean transform(final String className) {
-                                for (String pattern : includedClasses) {
-                                    if (matches(pattern, className)) {
-                                        if (excludedClasses != null) {
-                                            for (String excludePattern : excludedClasses) {
-                                                if (matches(excludePattern, className)) {
-                                                    return false;
-                                                }
-                                            }
-                                        }
-                                        return true;
-                                    }
-                                }
-                                return false;
-                            }
-                        });
-            }
-
-            Map<String, List<Violation>> violations = richReport.getViolationsGenerator().toViolations(jApiClasses);
-            for (List<Violation> violationList : violations.values()) {
-                for (Violation violation : violationList) {
-                    if (violation.getSeverity().equals(Severity.error)) {
-                        hasCustomViolations = true;
-                        break;
-                    }
-                }
-                if (hasCustomViolations) {
-                    break;
-                }
-            }
-            File path = richReport.getDestinationDir();
-            if (path == null) {
-                path = getProject().file(getProject().getBuildDir() + "/reports/");
-            }
-
-            richReport.getRenderer().render(new File(path, richReport.getReportName()), new RichReportData(richReport.getTitle(), richReport.getDescription(), violations));
-        }
-
-
-        if (failOnModification && (hasCustomViolations || hasBreakingChange(jApiClasses))) {
-            throw new GradleException("Detected binary changes between " + prettyPrint(current) + " and " + prettyPrint(baseline));
-        }
-    }
-
-    private static boolean hasBreakingChange(final List<JApiClass> jApiClasses) {
-        for (JApiClass jApiClass : jApiClasses) {
-            if (!jApiClass.isBinaryCompatible()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public void richReport(Action<? super RichReport> configureAction) {
         if (richReport == null) {
-            richReport = new RichReport(this);
+            richReport = new RichReport();
         }
 
         configureAction.execute(richReport);

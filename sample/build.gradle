@@ -1,6 +1,14 @@
+import japicmp.model.JApiChangeStatus
 import japicmp.model.JApiCompatibility
+import japicmp.model.JApiMethod
 import me.champeau.gradle.japicmp.JapicmpTask
 import me.champeau.gradle.japicmp.report.Violation
+import me.champeau.gradle.japicmp.report.ViolationRule
+import org.gradle.api.artifacts.transform.ArtifactTransform
+import org.gradle.api.attributes.Attribute
+
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 
 buildscript {
     repositories {
@@ -15,45 +23,243 @@ buildscript {
 
 apply plugin: "me.champeau.gradle.japicmp"
 
+def artifactType = Attribute.of('artifactType', String)
+
+def projects = [
+        'gradle-runtime-api-info',
+        'gradle-resources',
+        'gradle-messaging',
+        'gradle-wrapper',
+        'gradle-cli',
+        'gradle-jvm-services',
+        'gradle-model-core',
+        'gradle-core',
+        'gradle-installation-beacon',
+        'gradle-launcher',
+        'gradle-native',
+        'gradle-logging',
+        'gradle-process-services',
+        'gradle-tooling-api',
+        'gradle-base-services',
+        'gradle-docs',
+        'gradle-base-services-groovy',
+        'gradle-model-groovy',
+        'gradle-testing-native',
+        'gradle-workers',
+        'gradle-platform-native',
+        'gradle-testing-base',
+        'gradle-platform-base',
+        'gradle-resources-http',
+        'gradle-signing',
+        'gradle-build-init',
+        'gradle-plugin-use',
+        'gradle-reporting',
+        'gradle-resources-sftp',
+        'gradle-code-quality',
+        'gradle-publish',
+        'gradle-jacoco',
+        'gradle-ide-play',
+        'gradle-testing-jvm',
+        'gradle-javascript',
+        'gradle-osgi',
+        'gradle-language-java',
+        'gradle-composite-builds',
+        'gradle-ide-native',
+        'gradle-scala',
+        'gradle-platform-jvm',
+        'gradle-dependency-management',
+        'gradle-build-cache-http',
+        'gradle-resources-s3',
+        'gradle-platform-play',
+        'gradle-language-scala',
+        'gradle-antlr',
+        'gradle-tooling-api-builders',
+        'gradle-plugin-development',
+        'gradle-diagnostics',
+        'gradle-ide',
+        'gradle-ivy',
+        'gradle-maven',
+        'gradle-ear',
+        'gradle-announce',
+        'gradle-plugins',
+        'gradle-build-comparison',
+        'gradle-language-groovy',
+        'gradle-language-native',
+        'gradle-test-kit',
+        'gradle-language-jvm',
+]
+
 configurations {
     baseline
     current
 }
 
 repositories {
+    ivy {
+        name 'Gradle distributions'
+        url 'https://services.gradle.org'
+        layout 'pattern', {
+            ivy '[module]-ivy.xml'
+            artifact '/distributions/[module]-[revision]-bin(.[ext])'
+        }
+    }
     jcenter()
 }
 
 dependencies {
-    baseline 'com.github.siom79.japicmp:japicmp:0.9.0'
-    current 'com.github.siom79.japicmp:japicmp:0.10.0'
+    baseline 'gradle:gradle:3.5@zip'
+    current 'gradle:gradle:4.0@zip'
+
+    projects.each { projectName ->
+        registerTransform {
+            from.attribute(artifactType, 'zip')
+            to.attribute(artifactType, projectName)
+            artifactTransform(FindGradleJar) {
+                params(projectName)
+            }
+        }
+    }
+
 }
 
-task japicmp(type: JapicmpTask) {
-    oldClasspath = configurations.baseline
-    newClasspath = configurations.current
-    onlyModified = true
-    failOnModification = true
-    txtOutputFile = file("$buildDir/reports/japi.txt")
-    htmlOutputFile = file("$buildDir/reports/japi.html")
-    ignoreMissingClasses = true
-    richReport {
-        title = 'Binary compatibility report for japicmp'
-        addRule { JApiCompatibility member ->
-            if (!member.binaryCompatible) {
+task japicmp {}
+
+class AcceptedRegressionRule implements ViolationRule {
+    private final Map<String, String> acceptedViolations
+
+    public AcceptedRegressionRule(Map<String, String> params) {
+        acceptedViolations = params
+    }
+
+    @Override
+    Violation maybeViolation(final JApiCompatibility member) {
+        if (!member.binaryCompatible) {
+            def acceptation = acceptedViolations[Violation.describe(member)]
+            if (acceptation) {
+                Violation.accept(member, acceptation)
+            } else {
                 Violation.notBinaryCompatible(member)
             }
         }
-        /*addRule(JApiChangeStatus.NEW) { member ->
-            if (member instanceof JApiMethod) {
-                if (!member.annotations.find { it.fullyQualifiedName == 'org.gradle.api.Incubating' }) {
-                    if (member.name == 'getProcessor') {
-                        Violation.accept(member, "Accepted regression because of gradle#1234")
-                    } else {
-                        Violation.error(member, "New method is not annotated with @Incubating")
-                    }
+    }
+}
+
+class IncubatingMissingRule implements ViolationRule {
+
+    @Override
+    Violation maybeViolation(final JApiCompatibility member) {
+        if (member instanceof JApiMethod) {
+            if (!member.annotations.find { it.fullyQualifiedName == 'org.gradle.api.Incubating' }) {
+                if (!member.jApiClass.annotations.find {
+                    it.fullyQualifiedName == 'org.gradle.api.Incubating'
+                }) {
+                    Violation.error(member, "New method is not annotated with @Incubating")
                 }
             }
-        }*/
+        }
+    }
+}
+
+projects.each { projectName ->
+    def baselineConf = configurations.create("japicmp-baseline-$projectName") {
+        extendsFrom configurations.baseline
+        attributes.attribute(artifactType, projectName)
+    }
+
+    def currentConf = configurations.create("japicmp-current-$projectName") {
+        extendsFrom configurations.current
+        attributes.attribute(artifactType, projectName)
+    }
+
+    def t = task "japicmp-${projectName}"(type: JapicmpTask) {
+        oldClasspath = baselineConf
+        newClasspath = currentConf
+        onlyModified = true
+        failOnModification = true
+        ignoreMissingClasses = true
+        richReport {
+            title = "Binary compatibility report for $projectName"
+            reportName = "${projectName}.html"
+            def acceptedViolations = [
+                    'Implemented interface org.gradle.api.attributes.HasConfigurableAttributes': '@Incubating interface has been removed'
+            ]
+            addRule(AcceptedRegressionRule, acceptedViolations)
+            addRule(JApiChangeStatus.NEW, IncubatingMissingRule)
+
+            includedClasses = [
+                    'org[.]gradle[.].[^.]+',
+                    'org[.]gradle[.]api[.].*',
+                    'org[.]gradle[.]authentication[.].*',
+                    'org[.]gradle[.]buildinit[.].*',
+                    'org[.]gradle[.]caching[.].*',
+                    'org[.]gradle[.]external[.]javadoc[.].*',
+                    'org[.]gradle[.]ide[.].*',
+                    'org[.]gradle[.]includedbuild[.].*',
+                    'org[.]gradle[.]ivy[.].*',
+                    'org[.]gradle[.]jvm[.].*',
+                    'org[.]gradle[.]language[.].*',
+                    'org[.]gradle[.]maven[.].*',
+                    'org[.]gradle[.]nativeplatform[.].*',
+                    'org[.]gradle[.]normalization[.].*',
+                    'org[.]gradle[.]platform[.].*',
+                    'org[.]gradle[.]play[.].*',
+                    'org[.]gradle[.]plugin[.]devel[.].*',
+                    'org[.]gradle[.]plugin[.]repository[.]*',
+                    'org[.]gradle[.]plugin[.]use[.]*',
+                    'org[.]gradle[.]plugin[.]management[.]*',
+                    'org[.]gradle[.]plugins[.].*',
+                    'org[.]gradle[.]process[.].*',
+                    'org[.]gradle[.]testfixtures[.].*',
+                    'org[.]gradle[.]testing[.]jacoco[.].*',
+                    'org[.]gradle[.]tooling[.].*',
+                    'org[.]gradle[.]model[.].*',
+                    'org[.]gradle[.]testkit[.].*',
+                    'org[.]gradle[.]testing[.].*']
+            excludedClasses = [
+                    '[.]internal[.]'
+            ]
+        }
+    }
+    japicmp.dependsOn(t)
+}
+
+
+class FindGradleJar extends ArtifactTransform {
+
+    private final String target
+
+    @javax.inject.Inject
+    FindGradleJar(String target) {
+        this.target = target
+    }
+
+    @Override
+    List<File> transform(final File file) {
+        List<File> result = []
+        if (outputDirectory.exists() && outputDirectory.listFiles().length == 0) {
+            ZipInputStream zin = new ZipInputStream(file.newInputStream())
+            ZipEntry zipEntry
+            while (zipEntry = zin.nextEntry) {
+                String shortName = zipEntry.name
+                if (shortName.contains('/')) {
+                    shortName = shortName.substring(shortName.lastIndexOf('/') + 1)
+                }
+                if (shortName.startsWith(target) && shortName.endsWith('.jar')) {
+                    def out = new File(outputDirectory, shortName)
+
+                    out.withOutputStream { os ->
+                        byte[] buffer = new byte[2048]
+                        int n
+                        while ((n = zin.read(buffer, 0, 2048)) > -1) {
+                            os.write(buffer, 0, n)
+                        }
+
+                    }
+                    zin.closeEntry()
+                    result << out
+                }
+            }
+        }
+        result
     }
 }

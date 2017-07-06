@@ -3,26 +3,13 @@ package me.champeau.gradle.japicmp.report
 import groovy.transform.CompileStatic
 import japicmp.model.JApiChangeStatus
 import japicmp.model.JApiCompatibilityChange
-import me.champeau.gradle.japicmp.JapicmpTask
-import org.gradle.api.Action
-import org.gradle.api.Task
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.Optional
 
 @CompileStatic
 class RichReport implements Serializable {
-    private final transient JapicmpTask owner;
-
-    @Internal
-    transient final ViolationsGenerator violationsGenerator = new ViolationsGenerator()
-
-    @Internal
-    transient RichReportRenderer renderer = new GroovyReportRenderer()
-
-    RichReport(JapicmpTask owner) {
-        this.owner = owner
-    }
+    @Input
+    Class<? extends RichReportRenderer> renderer = GroovyReportRenderer
 
     @Optional
     @Input
@@ -48,39 +35,22 @@ class RichReport implements Serializable {
     @Input
     String description
 
-    void addRule(ViolationRule rule) {
-        owner.doFirst(new Action<Task>() {
-            @Override
-            void execute(final Task task) {
-                violationsGenerator.addRule(rule)
-            }
-        })
+    @Input
+    List<ViolationRuleConfiguration> rules = []
+
+    void addRule(Class<? extends ViolationRule> rule, Map<String, String> params = null) {
+        rules.add(new ViolationRuleConfiguration(rule, params))
     }
 
-    void addRule(JApiCompatibilityChange change, ViolationRule rule) {
-        owner.doFirst(new Action<Task>() {
-            @Override
-            void execute(final Task task) {
-                violationsGenerator.addRule(change, rule)
-            }
-        })
+    void addRule(JApiCompatibilityChange change, Class<? extends ViolationRule> rule, Map<String, String> params = null) {
+        rules.add(new CompatibilityChangeViolationRuleConfiguration(rule, params, change))
     }
 
-    void addRule(JApiChangeStatus status, ViolationRule rule) {
-        owner.doFirst(new Action<Task>() {
-            @Override
-            void execute(final Task task) {
-                violationsGenerator.addRule(status, rule)
-            }
-        })
+    void addRule(JApiChangeStatus status, Class<? extends ViolationRule> rule, Map<String, String> params = null) {
+        rules.add(new StatusChangeViolationRuleConfiguration(rule, params, status));
     }
 
     void renderer(Class<? extends RichReportRenderer> rendererType) {
-        owner.doFirst(new Action<Task>() {
-            @Override
-            void execute(final Task task) {
-                renderer = rendererType.newInstance()
-            }
-        })
+        this.renderer = rendererType
     }
 }
