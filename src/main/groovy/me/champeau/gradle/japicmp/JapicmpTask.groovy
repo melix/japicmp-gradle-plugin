@@ -76,6 +76,16 @@ class JapicmpTask extends DefaultTask {
     @CompileClasspath
     FileCollection newClasspath
 
+    @Input
+    @Optional
+    @CompileClasspath
+    FileCollection oldArchives
+
+    @Input
+    @Optional
+    @CompileClasspath
+    FileCollection newArchives
+
     @Optional
     @Input
     boolean ignoreMissingClasses = false
@@ -104,18 +114,21 @@ class JapicmpTask extends DefaultTask {
         options
     }
 
-    private List<JApiCmpArchive> toArchives(FileCollection fc) {
-        List<JApiCmpArchive> archives = []
+    private List<JApiCmpArchive> inferArchives(FileCollection fc) {
         if (fc instanceof Configuration) {
+            List<JApiCmpArchive> archives = []
             fc.resolvedConfiguration.firstLevelModuleDependencies.each {
                 collectArchives(archives, it)
             }
-        } else {
-            fc.files.collect(archives) {
-                new JApiCmpArchive(it, '1.0')
-            }
+            return archives
         }
-        archives
+        toJApiCmpArchives(fc)
+    }
+
+    private static List<JApiCmpArchive> toJApiCmpArchives(FileCollection fc) {
+        fc.files.collect {
+            new JApiCmpArchive(it, '1.0')
+        }
     }
 
     void collectArchives(List<JApiCmpArchive> archives, ResolvedDependency resolvedDependency) {
@@ -131,9 +144,9 @@ class JapicmpTask extends DefaultTask {
         def options = Options.newDefault()
         options.oldClassPath = com.google.common.base.Optional.of(oldClasspath.asPath)
         options.newClassPath = com.google.common.base.Optional.of(newClasspath.asPath)
-        def baseline = toArchives(oldClasspath)
-        def current = toArchives(newClasspath)
-        println "Comparing ${current} to ${baseline}"
+        def baseline = oldArchives?toJApiCmpArchives(oldArchives) : inferArchives(oldClasspath)
+        def current = newArchives?toJApiCmpArchives(newArchives) : inferArchives(newClasspath)
+        println "Comparing ${current*.file.name} to ${baseline*.file.name}"
         List<JApiClass> jApiClasses = jarArchiveComparator.compare(baseline, current)
         options.outputOnlyModifications = onlyModified
         options.outputOnlyBinaryIncompatibleModifications = onlyBinaryIncompatibleModified
