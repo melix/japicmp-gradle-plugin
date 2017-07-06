@@ -31,5 +31,6 @@ task japicmp(type: me.champeau.gradle.JapicmpTask) {
     onlyModified = true
     failOnModification = true
     txtOutputFile = file("$buildDir/reports/japi.txt")
+    htmlOutputFile = file("$buildDir/reports/japi.html")
     ignoreMissingClasses = true
 }
