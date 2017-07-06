@@ -1,21 +1,23 @@
+import japicmp.model.JApiCompatibility
 import me.champeau.gradle.japicmp.JapicmpTask
+import me.champeau.gradle.japicmp.report.Violation
 
 buildscript {
-  repositories {
-    maven {
-      url "https://plugins.gradle.org/m2/"
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
     }
-  }
-  dependencies {
-    classpath "me.champeau.gradle:japicmp-gradle-plugin:0.1.2"
-  }
+    dependencies {
+        classpath "me.champeau.gradle:japicmp-gradle-plugin:0.1.2"
+    }
 }
 
 apply plugin: "me.champeau.gradle.japicmp"
 
 configurations {
-   baseline
-   current
+    baseline
+    current
 }
 
 repositories {
@@ -23,8 +25,8 @@ repositories {
 }
 
 dependencies {
-   baseline 'org.apache.commons:commons-lang3:3.5'
-   current 'org.apache.commons:commons-lang3:3.6'
+    baseline 'com.github.siom79.japicmp:japicmp:0.9.0'
+    current 'com.github.siom79.japicmp:japicmp:0.10.0'
 }
 
 task japicmp(type: JapicmpTask) {
@@ -35,4 +37,23 @@ task japicmp(type: JapicmpTask) {
     txtOutputFile = file("$buildDir/reports/japi.txt")
     htmlOutputFile = file("$buildDir/reports/japi.html")
     ignoreMissingClasses = true
+    richReport {
+        title = 'Binary compatibility report for japicmp'
+        addRule { JApiCompatibility member ->
+            if (!member.binaryCompatible) {
+                Violation.notBinaryCompatible(member)
+            }
+        }
+        /*addRule(JApiChangeStatus.NEW) { member ->
+            if (member instanceof JApiMethod) {
+                if (!member.annotations.find { it.fullyQualifiedName == 'org.gradle.api.Incubating' }) {
+                    if (member.name == 'getProcessor') {
+                        Violation.accept(member, "Accepted regression because of gradle#1234")
+                    } else {
+                        Violation.error(member, "New method is not annotated with @Incubating")
+                    }
+                }
+            }
+        }*/
+    }
 }

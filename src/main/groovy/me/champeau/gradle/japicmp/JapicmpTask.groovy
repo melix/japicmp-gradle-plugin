@@ -12,12 +12,18 @@ import japicmp.output.stdout.StdoutOutputGenerator
 import japicmp.output.xml.XmlOutput
 import japicmp.output.xml.XmlOutputGenerator
 import japicmp.output.xml.XmlOutputGeneratorOptions
+import me.champeau.gradle.japicmp.report.RichReport
+import me.champeau.gradle.japicmp.report.RichReportData
+import me.champeau.gradle.japicmp.report.Severity
+import org.gradle.api.Action
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.ResolvedDependency
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
+
+import java.util.regex.Pattern
 
 @CompileStatic
 class JapicmpTask extends DefaultTask {
@@ -74,11 +80,20 @@ class JapicmpTask extends DefaultTask {
     @Input
     boolean ignoreMissingClasses = false
 
+    @Optional
+    @Input
+    List<String> includedClasses
+
+    @Optional
+    @Input
+    @Nested
+    RichReport richReport
+
     @TaskAction
     void exec() {
         def comparatorOptions = createOptions()
         def jarArchiveComparator = new JarArchiveComparator(comparatorOptions)
-        def classes = generateOutput(jarArchiveComparator)
+        generateOutput(jarArchiveComparator)
     }
 
     private JarArchiveComparatorOptions createOptions() {
@@ -115,7 +130,7 @@ class JapicmpTask extends DefaultTask {
     }
 
 
-    private List<JApiClass> generateOutput(JarArchiveComparator jarArchiveComparator) {
+    private void generateOutput(JarArchiveComparator jarArchiveComparator) {
         // we create a dummy options because we don't want to avoid use of internal classes of JApicmp
         def options = Options.newDefault()
         options.oldClassPath = com.google.common.base.Optional.of(oldClasspath.asPath)
@@ -143,11 +158,39 @@ class JapicmpTask extends DefaultTask {
             txtOutputFile.write(output)
         }
 
-        if (failOnModification && jApiClasses.any(DEFAULT_BREAK_BUILD_CHECK)) {
+        boolean hasCustomViolations = false
+        if (richReport) {
+            if (includedClasses) {
+                richReport.violationsGenerator.classFilter = { String className ->
+                    includedClasses.any {
+                        Pattern.compile(it).matcher(className).find()
+                    }
+                }
+            }
+            def violations = richReport.violationsGenerator.toViolations(jApiClasses)
+            hasCustomViolations = violations.values().any {
+                it.any { it.severity == Severity.error }
+            }
+            def path = richReport.destinationDir
+            if (path==null) {
+                path = project.file("$project.buildDir/reports/")
+            }
+            richReport.renderer.render(new File(path, richReport.reportName), new RichReportData(richReport.title, richReport.description, violations))
+        }
+
+
+        if (failOnModification && (hasCustomViolations || jApiClasses.any(DEFAULT_BREAK_BUILD_CHECK))) {
             throw new GradleException("Detected binary changes between ${toArchives(oldClasspath)*.file.name} and ${toArchives(newClasspath)*.file.name}")
         }
 
         jApiClasses
+    }
+
+    void richReport(Action<? super RichReport> configureAction) {
+        if (richReport == null) {
+            richReport = new RichReport(this)
+        }
+        configureAction.execute(richReport)
     }
 
 }
