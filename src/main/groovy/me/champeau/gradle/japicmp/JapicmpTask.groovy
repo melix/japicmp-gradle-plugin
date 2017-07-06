@@ -1,4 +1,4 @@
-package me.champeau.gradle
+package me.champeau.gradle.japicmp
 
 import groovy.transform.CompileStatic
 import japicmp.cmp.JApiCmpArchive

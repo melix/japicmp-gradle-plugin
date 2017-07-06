@@ -1,3 +1,5 @@
+import me.champeau.gradle.japicmp.JapicmpTask
+
 buildscript {
   repositories {
     maven {
@@ -25,7 +27,7 @@ dependencies {
    current 'org.apache.commons:commons-lang3:3.6'
 }
 
-task japicmp(type: me.champeau.gradle.JapicmpTask) {
+task japicmp(type: JapicmpTask) {
     oldClasspath = configurations.baseline
     newClasspath = configurations.current
     onlyModified = true

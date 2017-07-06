@@ -31,7 +31,7 @@ apply plugin: 'me.champeau.gradle.japicmp'
 
 == Configuration
 
-The plugin provides a new task type: `me.champeau.gradle.JapicmpTask` that you can use to compare two jars. This task
+The plugin provides a new task type: `me.champeau.gradle.japicmp.JapicmpTask` that you can use to compare two jars. This task
 exposes the following properties as part of its configuration:
 
 [horizontal]
@@ -54,7 +54,7 @@ Add the following to your build file:
 
 [source,groovy]
 ----
-task japicmp(type: me.champeau.gradle.JapicmpTask) {
+task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldArchive = file('path/to/reference.jar')
     newArchive = jar.archivePath
     onlyModified = true

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.champeau.gradle
+package me.champeau.gradle.japicmp
 
 import groovy.transform.CompileStatic
 import org.gradle.api.Plugin
