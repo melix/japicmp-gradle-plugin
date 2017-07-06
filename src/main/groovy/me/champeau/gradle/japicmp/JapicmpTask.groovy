@@ -82,10 +82,6 @@ class JapicmpTask extends DefaultTask {
 
     @Optional
     @Input
-    List<String> includedClasses
-
-    @Optional
-    @Input
     @Nested
     RichReport richReport
 
@@ -135,7 +131,10 @@ class JapicmpTask extends DefaultTask {
         def options = Options.newDefault()
         options.oldClassPath = com.google.common.base.Optional.of(oldClasspath.asPath)
         options.newClassPath = com.google.common.base.Optional.of(newClasspath.asPath)
-        List<JApiClass> jApiClasses = jarArchiveComparator.compare(toArchives(oldClasspath), toArchives(newClasspath))
+        def baseline = toArchives(oldClasspath)
+        def current = toArchives(newClasspath)
+        println "Comparing ${current} to ${baseline}"
+        List<JApiClass> jApiClasses = jarArchiveComparator.compare(baseline, current)
         options.outputOnlyModifications = onlyModified
         options.outputOnlyBinaryIncompatibleModifications = onlyBinaryIncompatibleModified
         options.includeSynthetic = includeSynthetic
@@ -160,10 +159,11 @@ class JapicmpTask extends DefaultTask {
 
         boolean hasCustomViolations = false
         if (richReport) {
-            if (includedClasses) {
+            if (richReport.includedClasses) {
                 richReport.violationsGenerator.classFilter = { String className ->
-                    includedClasses.any {
-                        Pattern.compile(it).matcher(className).find()
+                    richReport.includedClasses.any {
+                        Pattern.compile(it).matcher(className).find() && (
+                                !richReport.excludedClasses || !richReport.excludedClasses.any { Pattern.compile(it).matcher(className).find() })
                     }
                 }
             }
@@ -180,7 +180,7 @@ class JapicmpTask extends DefaultTask {
 
 
         if (failOnModification && (hasCustomViolations || jApiClasses.any(DEFAULT_BREAK_BUILD_CHECK))) {
-            throw new GradleException("Detected binary changes between ${toArchives(oldClasspath)*.file.name} and ${toArchives(newClasspath)*.file.name}")
+            throw new GradleException("Detected binary changes between ${baseline*.file.name} and ${current*.file.name}")
         }
 
         jApiClasses

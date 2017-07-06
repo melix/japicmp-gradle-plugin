@@ -26,6 +26,14 @@ class RichReport implements Serializable {
 
     @Optional
     @Input
+    List<String> includedClasses
+
+    @Optional
+    @Input
+    List<String> excludedClasses
+
+    @Optional
+    @Input
     File destinationDir
 
     @Optional
