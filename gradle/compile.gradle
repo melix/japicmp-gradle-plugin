@@ -27,6 +27,11 @@ dependencies {
         exclude group:'io.airlift'
     }
     compile 'com.google.guava:guava:17.0'
+
+    testCompile gradleTestKit()
+    testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
+        exclude group:'org.codehaus.groovy'
+    }
 }
 
 

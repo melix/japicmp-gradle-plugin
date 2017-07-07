@@ -1,0 +1,33 @@
+plugins {
+    id 'me.champeau.gradle.japicmp'
+}
+
+repositories {
+    jcenter()
+}
+
+configurations {
+    baseline
+    current
+}
+
+dependencies {
+    baseline 'org.apache.commons:commons-lang3:3.5'
+    current 'org.apache.commons:commons-lang3:3.6'
+}
+
+task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath = configurations.baseline
+    newClasspath = configurations.current
+    htmlOutputFile = file("$buildDir/reports/japi.html")
+}
+
+task japicmpRich(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath = configurations.baseline
+    newClasspath = configurations.current
+    richReport {
+        reportName = 'rich.html'
+        description = 'A test of rich report'
+    }
+}
+

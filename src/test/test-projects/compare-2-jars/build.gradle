@@ -1,0 +1,32 @@
+plugins {
+    id 'me.champeau.gradle.japicmp'
+}
+
+repositories {
+    jcenter()
+}
+
+
+configurations {
+    baseline
+    current
+}
+
+dependencies {
+    baseline 'org.apache.commons:commons-lang3:3.5'
+    current 'org.apache.commons:commons-lang3:3.6'
+}
+
+task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath = files(configurations.baseline.incoming.files)
+    newClasspath = files(configurations.current.incoming.files)
+    txtOutputFile = file("$buildDir/reports/japi.txt")
+}
+
+task japicmpWithExplicitClasspath(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath = files()
+    newClasspath = files()
+    oldArchives = files(configurations.baseline.incoming.files)
+    newArchives = files(configurations.current.incoming.files)
+    txtOutputFile = file("$buildDir/reports/japi.txt")
+}
