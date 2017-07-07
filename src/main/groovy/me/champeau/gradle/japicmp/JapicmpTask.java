@@ -51,7 +51,7 @@ public class JapicmpTask extends DefaultTask {
         workerExecutor.submit(JApiCmpWorkerAction.class, new Action<WorkerConfiguration>() {
             @Override
             public void execute(final WorkerConfiguration workerConfiguration) {
-                workerConfiguration.setIsolationMode(IsolationMode.CLASSLOADER);
+                workerConfiguration.setIsolationMode(IsolationMode.PROCESS);
                 Set<File> classpath = new HashSet<>();
                 for (ViolationRuleConfiguration configuration : richReport.getRules()) {
                     ProtectionDomain domain = configuration.getRuleClass().getProtectionDomain();

@@ -44,6 +44,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -120,7 +122,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
     private static String toClasspath(List<Archive> archives) {
         StringBuilder sb = new StringBuilder();
         for (Archive archive : archives) {
-            if (sb.length()>0) {
+            if (sb.length() > 0) {
                 sb.append(":");
             }
             sb.append(archive.file.getAbsolutePath());
@@ -140,12 +142,15 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         options.setOutputOnlyBinaryIncompatibleModifications(onlyBinaryIncompatibleModified);
         options.setIncludeSynthetic(includeSynthetic);
         options.setAccessModifier(AccessModifier.valueOf(accessModifier.toUpperCase()));
+        File reportFile = null;
         if (xmlOutputFile != null) {
             options.setXmlOutputFile(com.google.common.base.Optional.of(xmlOutputFile.getAbsolutePath()));
+            reportFile = xmlOutputFile;
         }
 
         if (htmlOutputFile != null) {
             options.setHtmlOutputFile(com.google.common.base.Optional.of(htmlOutputFile.getAbsolutePath()));
+            reportFile = htmlOutputFile;
         }
 
         if (xmlOutputFile != null || htmlOutputFile != null) {
@@ -165,6 +170,9 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             } catch (IOException ex) {
                 throw new GradleException("Unable to write report", ex);
             }
+            if (reportFile == null) {
+                reportFile = txtOutputFile;
+            }
         }
 
         boolean hasCustomViolations = false;
@@ -181,11 +189,11 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                         if (configuration.getClass() == ViolationRuleConfiguration.class) {
                             generator.addRule(rule);
                         } else if (configuration.getClass() == StatusChangeViolationRuleConfiguration.class) {
-                            generator.addRule(((StatusChangeViolationRuleConfiguration)configuration).getStatus(), rule);
+                            generator.addRule(((StatusChangeViolationRuleConfiguration) configuration).getStatus(), rule);
                         } else if (configuration.getClass() == CompatibilityChangeViolationRuleConfiguration.class) {
-                            generator.addRule(((CompatibilityChangeViolationRuleConfiguration)configuration).getChange(), rule);
+                            generator.addRule(((CompatibilityChangeViolationRuleConfiguration) configuration).getChange(), rule);
                         }
-                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e ) {
+                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                         throw new GradleException("Unable to instantiate rule", e);
                     }
                 }
@@ -209,7 +217,8 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             }
 
             try {
-                richReport.getRenderer().newInstance().render(new File(path, richReport.getReportName()), new RichReportData(richReport.getTitle(), richReport.getDescription(), violations));
+                reportFile = new File(path, richReport.getReportName());
+                richReport.getRenderer().newInstance().render(reportFile, new RichReportData(richReport.getTitle(), richReport.getDescription(), violations));
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new GradleException("Unable to create renderer", e);
             }
@@ -217,7 +226,20 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
 
 
         if (failOnModification && (hasCustomViolations || hasBreakingChange(jApiClasses))) {
-            throw new GradleException("Detected binary changes between " + prettyPrint(current) + " and " + prettyPrint(baseline));
+            String reportLink;
+            try {
+                reportLink = reportFile != null ? new URI("file", "", reportFile.toURI().getPath(), null, null).toString() : null;
+            } catch (URISyntaxException e) {
+                reportLink = null;
+            }
+            StringBuilder message = new StringBuilder("Detected binary changes between ")
+                    .append(prettyPrint(current))
+                    .append(" and ")
+                    .append(prettyPrint(baseline));
+            if (reportLink != null) {
+                message.append(". See failure report at ").append(reportLink);
+            }
+            throw new GradleException(message.toString());
         }
     }
 
