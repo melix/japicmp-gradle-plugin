@@ -23,7 +23,7 @@ buildscript {
 
 apply plugin: "me.champeau.gradle.japicmp"
 
-def artifactType = Attribute.of('artifactType', String)
+def ARTIFACT_TYPE = Attribute.of('artifactType', String)
 
 def projects = [
         'gradle-runtime-api-info',
@@ -113,8 +113,8 @@ dependencies {
     // This transform takes the Gradle zip distribution,
     // and unzips the Gradle jar files that it contains in a directory
     registerTransform {
-        from.attribute(artifactType, 'zip')
-        to.attribute(artifactType, 'gradle-libs-dir')
+        from.attribute(ARTIFACT_TYPE, 'zip')
+        to.attribute(ARTIFACT_TYPE, 'gradle-libs-dir')
         artifactTransform(ExplodeZipAndFindJars)
     }
 
@@ -122,8 +122,8 @@ dependencies {
         // This transform uses the result of the exploded zip extraction
         // and returns a single jar file based on the lookup project name
         registerTransform {
-            from.attribute(artifactType, 'gradle-libs-dir')
-            to.attribute(artifactType, projectName)
+            from.attribute(ARTIFACT_TYPE, 'gradle-libs-dir')
+            to.attribute(ARTIFACT_TYPE, projectName)
             artifactTransform(FindGradleJar) {
                 params(projectName)
             }
@@ -173,12 +173,12 @@ class IncubatingMissingRule implements ViolationRule {
 projects.each { projectName ->
     def baselineConf = configurations.create("japicmp-baseline-$projectName") {
         extendsFrom configurations.baseline
-        attributes.attribute(artifactType, projectName)
+        attributes.attribute(ARTIFACT_TYPE, projectName)
     }
 
     def currentConf = configurations.create("japicmp-current-$projectName") {
         extendsFrom configurations.current
-        attributes.attribute(artifactType, projectName)
+        attributes.attribute(ARTIFACT_TYPE, projectName)
     }
 
     def t = task "japicmp-${projectName}"(type: JapicmpTask) {
