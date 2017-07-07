@@ -97,8 +97,13 @@ public class ViolationsGenerator {
     private void maybeProcess(JApiClass clazz, Context context) {
         String fullyQualifiedName = clazz.getFullyQualifiedName();
         if (includePatterns != null) {
-            if (anyMatches(includePatterns, fullyQualifiedName) && (excludePatterns==null || !anyMatches(excludePatterns, fullyQualifiedName))) {
+            if (anyMatches(includePatterns, fullyQualifiedName)) {
+                if (excludePatterns != null && anyMatches(excludePatterns, fullyQualifiedName)) {
+                    return;
+                }
                 processClass(clazz, context);
+                return;
+            } else {
                 return;
             }
         } else if (excludePatterns != null) {
