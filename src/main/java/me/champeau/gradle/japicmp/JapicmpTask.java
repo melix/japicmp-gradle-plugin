@@ -53,14 +53,16 @@ public class JapicmpTask extends DefaultTask {
             public void execute(final WorkerConfiguration workerConfiguration) {
                 workerConfiguration.setIsolationMode(IsolationMode.PROCESS);
                 Set<File> classpath = new HashSet<>();
-                for (ViolationRuleConfiguration configuration : richReport.getRules()) {
-                    ProtectionDomain domain = configuration.getRuleClass().getProtectionDomain();
-                    CodeSource codeSource = domain.getCodeSource();
-                    if (codeSource != null) {
-                        try {
-                            classpath.add(new File(codeSource.getLocation().toURI()));
-                        } catch (URISyntaxException e) {
-                            // silent
+                if (richReport != null) {
+                    for (ViolationRuleConfiguration configuration : richReport.getRules()) {
+                        ProtectionDomain domain = configuration.getRuleClass().getProtectionDomain();
+                        CodeSource codeSource = domain.getCodeSource();
+                        if (codeSource != null) {
+                            try {
+                                classpath.add(new File(codeSource.getLocation().toURI()));
+                            } catch (URISyntaxException e) {
+                                // silent
+                            }
                         }
                     }
                 }
