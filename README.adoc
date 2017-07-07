@@ -2,7 +2,7 @@
 :japicmp-url: https://github.com/siom79/japicmp
 :issues: https://github.com/melix/japicmp-gradle-plugin/issues
 :gradle-url: http://gradle.org/
-:plugin-version: 0.1.2
+:plugin-version: 0.2.0
 
 image:https://travis-ci.org/melix/japicmp-gradle-plugin.png?branch=master["Build Status", link="https://travis-ci.org/melix/japicmp-gradle-plugin"]
 
@@ -10,7 +10,9 @@ The japicmp-gradle-plugin provides binary compatibility reporting through {japic
 
 == Installation
 
-Use the following snippet inside a Gradle build file:
+NOTE: Version 0.2+ of this plugin is NOT compatible with 0.1
+
+This plugin requires Gradle 4+. Use the following snippet inside a Gradle build file:
 
 [source,groovy]
 .build.gradle
@@ -22,11 +24,18 @@ buildscript {
 
     dependencies {
         classpath 'me.champeau.gradle:japicmp-gradle-plugin:{plugin-version}'
-        // UNCOMMENT THE NEXT LINE ONLY IF YOU ARE USING GRADLE 1.X
-        // classpath 'org.codehaus.groovy:groovy-backports-compat23:2.3.6'
     }
 }
 apply plugin: 'me.champeau.gradle.japicmp'
+----
+
+or
+
+[source,groovy]
+----
+plugins {
+    id 'me.champeau.gradle.japicmp' version '{plugin-version}'
+}
 ----
 
 == Configuration
@@ -35,8 +44,10 @@ The plugin provides a new task type: `me.champeau.gradle.japicmp.JapicmpTask` th
 exposes the following properties as part of its configuration:
 
 [horizontal]
-oldArchive:: The jar file which will be used as the reference for comparison. Type: _File_.
-newArchive:: The jar file we want the report to work on. Type: _File_.
+oldClasspath:: The classpath of the baseline library to compare. Type: _FileCollection_
+newClasspath:: The classpath of the current version of the library, which you want to check binary compatibility  Type: _FileCollection_
+oldArchives:: The jar files which will be used as the baseline for comparison. Type: _FileCollection_.
+newArchives:: The jar files we want to analyze. Type: Type: _FileCollection_.
 onlyModified:: Outputs only modified classes/methods. If not set to true, all classes and methods are printed. Type: _boolean_. Default value: _false_
 onlyBinaryIncompatibleModified:: Outputs only classes/methods with modifications that result in binary incompatibility. Type: _boolean_. Default value: _false_
 packagesToInclude:: List of package names to include, * can be used as wildcard. Type: _List<String>_
@@ -48,6 +59,10 @@ htmlOutputFile:: Path to the generated HTML report. Type: _File_. Default value:
 txtOutputFile:: Path to the generated TXT report. Type: _File_. Default value: _null_
 includeSynthetic:: Synthetic classes and class members (like e.g. bridge methods) are not tracked per default. This new option enables the tracking of such kind of classes and class members
 
+If you don't set _oldArchives_ and _newArchives_, the plugin will infer them from the _oldClasspath_ and _newClasspath_ properties:
+   * if you set the classpath to a configuration, the archives to compare will be the first level dependencies of that configuration
+   * if you set the classpath to a simple file collection, all archives will be compared
+
 == Usage
 
 Add the following to your build file:
@@ -55,101 +70,130 @@ Add the following to your build file:
 [source,groovy]
 ----
 task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    oldArchive = file('path/to/reference.jar')
-    newArchive = jar.archivePath
+    oldClasspath = files('path/to/reference.jar')
+    newClasspath = files(jar.archivePath')
     onlyModified = true
     failOnModification = true
     txtOutputFile = file("$buildDir/reports/japi.txt")
 }
 ----
 
-== Alternative task
+== Custom reports and failure conditions
 
-An alternative task will let you work on dependencies instead of plain jars. Imagine that you want to compare the current
-jar with a previous version, available in a repository. Then you can do:
+The plugin supports a DSL to generate custom reports based on the API comparison result. This has several advantages:
+
+* you can generate a report that focuses only on your public API, leaving the internal APIs out
+* you can implement custom rules to determine if the build should fail or not
+* the report can be presented to users and provide guidance for migration from one version to the other
+
+=== Configuration
+
+The report can be configured using the `richReport` block:
 
 [source,groovy]
 ----
-task japicmp(type: me.champeau.gradle.ArtifactJapicmpTask) {
-    baseline = 'com.acme.group:artifactid:version'
-    to = jar.archivePath
-    onlyModified = true
-    failOnModification = true
-    txtOutputFile = file("$buildDir/reports/japi.txt")
+task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
+   ...
+   richReport {
+      ...
+   }
 }
 ----
 
-Note the use of `ArtifactJapicmpTask` instead of `JapicmpTask`.
+Options for the rich report are:
 
-== Custom build failure conditions
+[horizontal]
+renderer:: The renderer used to generate the report. By default, it uses the GroovyReportRenderer
+includedClasses:: A list of strings representing inclusion patterns (interpreted as regular expressions). Only classes matching this pattern will be included.
+excludedClasses:: A list of strings representing exclusion patterns. If a class fully qualified name matches any of those patterns, it will not be included.
+destinationDir:: the directory where to store the report
+reportName:: file name of the generated report (defaults to `rich-report.html`)
+title:: a title for the report
+description:: a description for the report
 
-The plugin also supports a DSL providing hooks for classes and methods which have been added/removed/... You can use
-those hooks to trigger custom build failures, like illustrated here:
+=== Custom rules
+
+Rules are used to add violations to the report. The "violation" term must be taken in a simple sense, as it represents data
+to be shown in the report, whether it's a critical violation or just information.
+
+A violation consists of a triplet (member, severity, explanation), that will be seen in the report. For example, if a binary
+incompatibility is found, you can create a violation using:
+
+```
+Violation.notBinaryCompatible(member)
+```
+
+which will automatically assign it to the `error` severity, leading in a build failure. However, it is possible to create any
+kind of violation, and even accept binary incompatible changes.
+
+Rules can be applied to 3 different levels:
+
+* all members (a generic rule applied unconditionnaly)
+* on specific change types (`NEW`, `REMOVED`, `UNCHANGED`, `MODIFIED`), see `JApiChangeStatus`
+* on specific compatibility change descriptors (see `JApiCompatibilityChange`)
+
+For example, imagine that we want to check that all new methods are annotated with `@Incubating` (this is a rule in the Gradle project).
+Then, you need to create a rule class which will implement that check:
 
 [source,groovy]
 ----
-task japicmp(type: me.champeau.gradle.ArtifactJapicmpTask) {
-    baseline = 'com.acme.group:artifactid:version'
-    to = jar.archivePath
-    onlyModified = true
-    failOnModification = false // by default, no failure
-    txtOutputFile = file("$buildDir/reports/japi.txt")
-    outputProcessor {
-        removedMethod { clazz, method ->
-            if (clazz.fullyQualifiedName == 'com.Foo') {
-                failOnModification = true // This class must absolutely not be touched!
+class IncubatingMissingRule implements ViolationRule {
+    @Override
+    Violation maybeViolation(final JApiCompatibility member) {
+        if (member instanceof JApiMethod) {
+            if (!member.annotations.find { it.fullyQualifiedName == 'org.gradle.api.Incubating' }) {
+                if (!member.jApiClass.annotations.find {
+                    it.fullyQualifiedName == 'org.gradle.api.Incubating'
+                }) {
+                    Violation.error(member, "New method is not annotated with @Incubating")
+                }
             }
         }
     }
 }
 ----
 
-The `outputProcessor` block supports the following hooks:
-
-.Output processor hooks
-[options="header,footer"]
-|======================
-|Hook name |Arguments |Description
-|unchangedClass |JApiClass |Called on an unchanged class, unless onlyModified is true
-|newClass |JApiClass |A class has been added
-|modifiedClass |JApiClass |A class has been modified
-|removedClass |JApiClass |A class has been removed
-|unchangedMethod |(JApiMethod) or (JApiClass,JApiMethod) |Called on an unchanged method, unless onlyModified is true
-|unchangedConstructor |(JApiConstructor) or (JApiClass,JApiConstructor) |Called on an unchanged constructor, unless onlyModified is true
-|newMethod |(JApiMethod) or (JApiClass,JApiMethod) |A method has been added
-|modifiedMethod |(JApiMethod) or (JApiClass,JApiMethod) |A method has been modified
-|modifiedConstructor |(JApiConstructor) or (JApiClass,JApiConstructor) |A constructor has been modified
-|removedMethod |(JApiMethod) or (JApiClass,JApiMethod) |A method has been removed
-|removedConstructor |(JApiConstructor) or (JApiClass,JApiConstructor) |A method has been removed
-|before |List<JApiClass> | Called before iteration on classes is triggered
-|after |List<JApiClass> | Called after iteration on classes is triggered
-|======================
-
-The `xxxMethod` hooks support two variants. One takes a single argument corresponding to the method only. The second
-version is a convenient way to track to which class the method belongs to, by adding it as a first argument.
-
-== Custom output
-
-The `outputProcessor` hooks can be used to produce custom reports, as illustrated here:
+and then you need to configure the report to use that rule:
 
 [source,groovy]
 ----
-task japicmp(type: me.champeau.gradle.ArtifactJapicmpTask) {
-    // ...
+richReport {
+   addRule(JApiChangeStatus.NEW, IncubatingMissingRule)
+}
+----
 
-    outputProcessor {
-        def sb = new StringBuilder()
+Rules can take arguments, but those are limited to `Map<String, String>`. For example, the following rule will mark
+a binary breaking change as an error, unless it is reviewed and accepted. The list of acceptations is passed as an
+argument to the rule:
 
-        before {
-            sb << "Comparing $baseline with $to\n"
-        }
-        after { list ->
-            sb << "Reported ${list.size()} changed classes\n"
-            file("${buildDir}/reports/custom.txt").write(sb.toString())
-        }
-        newMethod { c, m ->
-           sb.append "Class $c.fullyQualifiedName has new method: $m.name\n"
+[source,groovy]
+----
+class AcceptedRegressionRule implements ViolationRule {
+    private final Map<String, String> acceptedViolations
+
+    public AcceptedRegressionRule(Map<String, String> params) {
+        acceptedViolations = params
+    }
+
+    @Override
+    Violation maybeViolation(final JApiCompatibility member) {
+        if (!member.binaryCompatible) {
+            def acceptation = acceptedViolations[Violation.describe(member)]
+            if (acceptation) {
+                Violation.accept(member, acceptation)
+            } else {
+                Violation.notBinaryCompatible(member)
+            }
         }
     }
+}
+----
+
+and here's how the rule is applied:
+
+[source,groovy]
+----
+richReport {
+   addRule(AcceptedRegressionRule, acceptedViolations)
 }
 ----
