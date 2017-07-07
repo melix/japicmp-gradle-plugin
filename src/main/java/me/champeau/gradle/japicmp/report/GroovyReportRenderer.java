@@ -30,6 +30,7 @@ public class GroovyReportRenderer implements RichReportRenderer {
         String description = data.getDescription();
         model.put("description", description != null ? description : "");
         model.put("violations", data.getViolations());
+        htmlReportFile.getParentFile().mkdirs();
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
                 new FileOutputStream(htmlReportFile), "utf-8"
         ))) {
