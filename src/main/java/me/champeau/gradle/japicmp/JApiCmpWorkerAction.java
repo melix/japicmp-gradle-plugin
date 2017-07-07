@@ -49,7 +49,6 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements Runnable {
 
@@ -105,10 +104,6 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             sb.append(archive.getFile().getName());
         }
         return sb.toString();
-    }
-
-    private static boolean matches(String pattern, String className) {
-        return Pattern.compile(pattern).matcher(className).find();
     }
 
     private static List<JApiCmpArchive> toJapiCmpArchives(List<Archive> archives) {
@@ -180,22 +175,21 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             final List<String> includedClasses = richReport.getIncludedClasses();
             final List<String> excludedClasses = richReport.getExcludedClasses();
             ViolationsGenerator generator = new ViolationsGenerator(includedClasses, excludedClasses);
-            if (includedClasses != null) {
-                for (ViolationRuleConfiguration configuration : richReport.getRules()) {
-                    Map<String, String> arguments = configuration.getArguments();
-                    Class<? extends ViolationRule> ruleClass = configuration.getRuleClass();
-                    try {
-                        ViolationRule rule = arguments == null ? ruleClass.newInstance() : ruleClass.getConstructor(Map.class).newInstance(arguments);
-                        if (configuration.getClass() == ViolationRuleConfiguration.class) {
-                            generator.addRule(rule);
-                        } else if (configuration.getClass() == StatusChangeViolationRuleConfiguration.class) {
-                            generator.addRule(((StatusChangeViolationRuleConfiguration) configuration).getStatus(), rule);
-                        } else if (configuration.getClass() == CompatibilityChangeViolationRuleConfiguration.class) {
-                            generator.addRule(((CompatibilityChangeViolationRuleConfiguration) configuration).getChange(), rule);
-                        }
-                    } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                        throw new GradleException("Unable to instantiate rule", e);
+            List<ViolationRuleConfiguration> rules = richReport.getRules();
+            for (ViolationRuleConfiguration configuration : rules) {
+                Map<String, String> arguments = configuration.getArguments();
+                Class<? extends ViolationRule> ruleClass = configuration.getRuleClass();
+                try {
+                    ViolationRule rule = arguments == null ? ruleClass.newInstance() : ruleClass.getConstructor(Map.class).newInstance(arguments);
+                    if (configuration.getClass() == ViolationRuleConfiguration.class) {
+                        generator.addRule(rule);
+                    } else if (configuration.getClass() == StatusChangeViolationRuleConfiguration.class) {
+                        generator.addRule(((StatusChangeViolationRuleConfiguration) configuration).getStatus(), rule);
+                    } else if (configuration.getClass() == CompatibilityChangeViolationRuleConfiguration.class) {
+                        generator.addRule(((CompatibilityChangeViolationRuleConfiguration) configuration).getChange(), rule);
                     }
+                } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                    throw new GradleException("Unable to instantiate rule", e);
                 }
             }
 
