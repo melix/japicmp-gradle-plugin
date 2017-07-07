@@ -2,7 +2,7 @@
 :japicmp-url: https://github.com/siom79/japicmp
 :issues: https://github.com/melix/japicmp-gradle-plugin/issues
 :gradle-url: http://gradle.org/
-:plugin-version: 0.2.0
+:plugin-version: 0.2.1
 
 image:https://travis-ci.org/melix/japicmp-gradle-plugin.png?branch=master["Build Status", link="https://travis-ci.org/melix/japicmp-gradle-plugin"]
 
