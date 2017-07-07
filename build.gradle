@@ -1,17 +1,7 @@
-buildscript {
-    repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
-    }
-    dependencies {
-        classpath "com.gradle.publish:plugin-publish-plugin:0.9.6"
-    }
-}
-
 plugins {
     id 'com.gradle.build-scan' version '1.8'
     id 'me.champeau.buildscan-recipes' version '0.2.0'
+    id 'com.gradle.plugin-publish' version '0.9.7'
 }
 
 buildScan {
