@@ -24,22 +24,44 @@ import japicmp.model.JApiField;
 import japicmp.model.JApiHasChangeStatus;
 import japicmp.model.JApiImplementedInterface;
 import japicmp.model.JApiMethod;
-import org.gradle.api.Transformer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class ViolationsGenerator {
-    private Transformer<Boolean, String> classFilter;
+    private final List<Pattern> includePatterns;
+    private final List<Pattern> excludePatterns;
     private final Map<JApiCompatibilityChange, List<ViolationRule>> apiCompatibilityRules = new HashMap<JApiCompatibilityChange, List<ViolationRule>>();
     private final Map<JApiChangeStatus, List<ViolationRule>> statusRules = new HashMap<JApiChangeStatus, List<ViolationRule>>();
     private final List<ViolationRule> genericRules = new ArrayList<ViolationRule>();
 
-    public void setClassFilter(final Transformer<Boolean, String> classFilter) {
-        this.classFilter = classFilter;
+    public ViolationsGenerator(final List<String> includePatterns, final List<String> excludePatterns) {
+        this.includePatterns = toPatterns(includePatterns);
+        this.excludePatterns = toPatterns(excludePatterns);
+    }
+
+    private static List<Pattern> toPatterns(List<String> regexps) {
+        if (regexps == null) {
+            return null;
+        }
+        List<Pattern> patterns = new ArrayList<>(regexps.size());
+        for (String regexp : regexps) {
+            patterns.add(Pattern.compile(regexp));
+        }
+        return patterns;
+    }
+
+    private static boolean anyMatches(List<Pattern> patterns, String className) {
+        for (Pattern pattern : patterns) {
+            if (pattern.matcher(className).find()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void addRule(ViolationRule rule) {
@@ -73,9 +95,18 @@ public class ViolationsGenerator {
     }
 
     private void maybeProcess(JApiClass clazz, Context context) {
-        if (classFilter == null || classFilter.transform(clazz.getFullyQualifiedName())) {
-            processClass(clazz, context);
+        String fullyQualifiedName = clazz.getFullyQualifiedName();
+        if (includePatterns != null) {
+            if (anyMatches(includePatterns, fullyQualifiedName) && (excludePatterns==null || !anyMatches(excludePatterns, fullyQualifiedName))) {
+                processClass(clazz, context);
+                return;
+            }
+        } else if (excludePatterns != null) {
+            if (anyMatches(excludePatterns, fullyQualifiedName)) {
+                return;
+            }
         }
+        processClass(clazz, context);
     }
 
     private void processCompatibilityChange(JApiCompatibilityChange kind, JApiCompatibility member, final Context context) {

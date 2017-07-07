@@ -35,7 +35,6 @@ import me.champeau.gradle.japicmp.report.ViolationRule;
 import me.champeau.gradle.japicmp.report.ViolationRuleConfiguration;
 import me.champeau.gradle.japicmp.report.ViolationsGenerator;
 import org.gradle.api.GradleException;
-import org.gradle.api.Transformer;
 
 import javax.inject.Inject;
 import java.io.BufferedWriter;
@@ -172,7 +171,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         if (richReport != null) {
             final List<String> includedClasses = richReport.getIncludedClasses();
             final List<String> excludedClasses = richReport.getExcludedClasses();
-            ViolationsGenerator generator = new ViolationsGenerator();
+            ViolationsGenerator generator = new ViolationsGenerator(includedClasses, excludedClasses);
             if (includedClasses != null) {
                 for (ViolationRuleConfiguration configuration : richReport.getRules()) {
                     Map<String, String> arguments = configuration.getArguments();
@@ -190,25 +189,6 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                         throw new GradleException("Unable to instantiate rule", e);
                     }
                 }
-                generator.setClassFilter(
-                        new Transformer<Boolean, String>() {
-                            @Override
-                            public Boolean transform(final String className) {
-                                for (String pattern : includedClasses) {
-                                    if (matches(pattern, className)) {
-                                        if (excludedClasses != null) {
-                                            for (String excludePattern : excludedClasses) {
-                                                if (matches(excludePattern, className)) {
-                                                    return false;
-                                                }
-                                            }
-                                        }
-                                        return true;
-                                    }
-                                }
-                                return false;
-                            }
-                        });
             }
 
             Map<String, List<Violation>> violations = generator.toViolations(jApiClasses);
