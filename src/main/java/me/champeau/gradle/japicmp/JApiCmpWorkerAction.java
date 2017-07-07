@@ -219,7 +219,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         }
 
 
-        if (failOnModification && (hasCustomViolations || hasBreakingChange(jApiClasses))) {
+        if ((failOnModification && hasBreakingChange(jApiClasses)) || hasCustomViolations) {
             String reportLink;
             try {
                 reportLink = reportFile != null ? new URI("file", "", reportFile.toURI().getPath(), null, null).toString() : null;
