@@ -110,9 +110,19 @@ dependencies {
     baseline 'gradle:gradle:3.5@zip'
     current 'gradle:gradle:4.0@zip'
 
+    // This transform takes the Gradle zip distribution,
+    // and unzips the Gradle jar files that it contains in a directory
+    registerTransform {
+        from.attribute(artifactType, 'zip')
+        to.attribute(artifactType, 'gradle-libs-dir')
+        artifactTransform(ExplodeZipAndFindJars)
+    }
+
     projects.each { projectName ->
+        // This transform uses the result of the exploded zip extraction
+        // and returns a single jar file based on the lookup project name
         registerTransform {
-            from.attribute(artifactType, 'zip')
+            from.attribute(artifactType, 'gradle-libs-dir')
             to.attribute(artifactType, projectName)
             artifactTransform(FindGradleJar) {
                 params(projectName)
@@ -225,13 +235,24 @@ projects.each { projectName ->
 
 
 class FindGradleJar extends ArtifactTransform {
-
     private final String target
 
     @javax.inject.Inject
     FindGradleJar(String target) {
         this.target = target
     }
+
+    @Override
+    List<File> transform(final File file) {
+        if (file.name.startsWith(target)) {
+            [file]
+        } else {
+            []
+        }
+    }
+}
+
+class ExplodeZipAndFindJars extends ArtifactTransform {
 
     @Override
     List<File> transform(final File file) {
@@ -244,7 +265,7 @@ class FindGradleJar extends ArtifactTransform {
                 if (shortName.contains('/')) {
                     shortName = shortName.substring(shortName.lastIndexOf('/') + 1)
                 }
-                if (shortName.startsWith(target) && shortName.endsWith('.jar')) {
+                if (shortName.startsWith('gradle-') && shortName.endsWith('.jar')) {
                     def out = new File(outputDirectory, shortName)
 
                     out.withOutputStream { os ->
