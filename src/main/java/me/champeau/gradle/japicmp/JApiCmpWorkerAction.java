@@ -27,7 +27,12 @@ import japicmp.output.xml.XmlOutput;
 import japicmp.output.xml.XmlOutputGenerator;
 import japicmp.output.xml.XmlOutputGeneratorOptions;
 import me.champeau.gradle.japicmp.report.CompatibilityChangeViolationRuleConfiguration;
+import me.champeau.gradle.japicmp.report.PostProcessRuleConfiguration;
+import me.champeau.gradle.japicmp.report.PostProcessViolationsRule;
 import me.champeau.gradle.japicmp.report.RichReportData;
+import me.champeau.gradle.japicmp.report.RuleConfiguration;
+import me.champeau.gradle.japicmp.report.SetupRule;
+import me.champeau.gradle.japicmp.report.SetupRuleConfiguration;
 import me.champeau.gradle.japicmp.report.Severity;
 import me.champeau.gradle.japicmp.report.StatusChangeViolationRuleConfiguration;
 import me.champeau.gradle.japicmp.report.Violation;
@@ -175,18 +180,22 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             final List<String> includedClasses = richReport.getIncludedClasses();
             final List<String> excludedClasses = richReport.getExcludedClasses();
             ViolationsGenerator generator = new ViolationsGenerator(includedClasses, excludedClasses);
-            List<ViolationRuleConfiguration> rules = richReport.getRules();
-            for (ViolationRuleConfiguration configuration : rules) {
+            List<RuleConfiguration> rules = richReport.getRules();
+            for (RuleConfiguration configuration : rules) {
                 Map<String, String> arguments = configuration.getArguments();
-                Class<? extends ViolationRule> ruleClass = configuration.getRuleClass();
+                Class<?> ruleClass = configuration.getRuleClass();
                 try {
-                    ViolationRule rule = arguments == null ? ruleClass.newInstance() : ruleClass.getConstructor(Map.class).newInstance(arguments);
-                    if (configuration.getClass() == ViolationRuleConfiguration.class) {
-                        generator.addRule(rule);
+                    Object rule = arguments == null ? ruleClass.newInstance() : ruleClass.getConstructor(Map.class).newInstance(arguments);
+                    if (configuration.getClass() == SetupRuleConfiguration.class) {
+                        generator.addRule((SetupRule) rule);
+                    } else if (configuration.getClass() == PostProcessRuleConfiguration.class) {
+                        generator.addRule((PostProcessViolationsRule) rule);
+                    } else if (configuration.getClass() == ViolationRuleConfiguration.class) {
+                        generator.addRule((ViolationRule) rule);
                     } else if (configuration.getClass() == StatusChangeViolationRuleConfiguration.class) {
-                        generator.addRule(((StatusChangeViolationRuleConfiguration) configuration).getStatus(), rule);
+                        generator.addRule(((StatusChangeViolationRuleConfiguration) configuration).getStatus(), (ViolationRule) rule);
                     } else if (configuration.getClass() == CompatibilityChangeViolationRuleConfiguration.class) {
-                        generator.addRule(((CompatibilityChangeViolationRuleConfiguration) configuration).getChange(), rule);
+                        generator.addRule(((CompatibilityChangeViolationRuleConfiguration) configuration).getChange(), (ViolationRule) rule);
                     }
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                     throw new GradleException("Unable to instantiate rule", e);

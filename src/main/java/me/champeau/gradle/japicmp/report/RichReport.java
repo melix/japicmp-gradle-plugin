@@ -20,7 +20,7 @@ public class RichReport implements Serializable {
     private String reportName = "rich-report.html";
     private String title;
     private String description;
-    private List<ViolationRuleConfiguration> rules = new ArrayList<ViolationRuleConfiguration>();
+    private List<RuleConfiguration> rules = new ArrayList<RuleConfiguration>();
 
     public void addRule(Class<? extends ViolationRule> rule, Map<String, String> params) {
         rules.add(new ViolationRuleConfiguration(rule, params));
@@ -28,6 +28,22 @@ public class RichReport implements Serializable {
 
     public void addRule(Class<? extends ViolationRule> rule) {
         addRule(rule, null);
+    }
+
+    public void addSetupRule(Class<? extends SetupRule> rule, Map<String, String> params) {
+        rules.add(new SetupRuleConfiguration(rule, params));
+    }
+
+    public void addSetupRule(Class<? extends SetupRule> rule) {
+        addSetupRule(rule, null);
+    }
+
+    public void addPostProcessRule(Class<? extends PostProcessViolationsRule> rule, Map<String, String> params) {
+        rules.add(new PostProcessRuleConfiguration(rule, params));
+    }
+
+    public void addPostProcessRule(Class<? extends PostProcessViolationsRule> rule) {
+        addPostProcessRule(rule, null);
     }
 
     public void addRule(JApiCompatibilityChange change, Class<? extends ViolationRule> rule, Map<String, String> params) {
@@ -120,11 +136,11 @@ public class RichReport implements Serializable {
     }
 
     @Input
-    public List<ViolationRuleConfiguration> getRules() {
+    public List<RuleConfiguration> getRules() {
         return rules;
     }
 
-    public void setRules(List<ViolationRuleConfiguration> rules) {
+    public void setRules(List<RuleConfiguration> rules) {
         this.rules = rules;
     }
 

@@ -1,7 +1,7 @@
 package me.champeau.gradle.japicmp;
 
 import me.champeau.gradle.japicmp.report.RichReport;
-import me.champeau.gradle.japicmp.report.ViolationRuleConfiguration;
+import me.champeau.gradle.japicmp.report.RuleConfiguration;
 import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.artifacts.Configuration;
@@ -54,7 +54,7 @@ public class JapicmpTask extends DefaultTask {
                 workerConfiguration.setIsolationMode(IsolationMode.PROCESS);
                 Set<File> classpath = new HashSet<>();
                 if (richReport != null) {
-                    for (ViolationRuleConfiguration configuration : richReport.getRules()) {
+                    for (RuleConfiguration configuration : richReport.getRules()) {
                         ProtectionDomain domain = configuration.getRuleClass().getProtectionDomain();
                         CodeSource codeSource = domain.getCodeSource();
                         if (codeSource != null) {

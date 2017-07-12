@@ -15,11 +15,14 @@
  */
 package me.champeau.gradle.japicmp.report;
 
-import java.util.Map;
+public abstract class AbstractContextAwareViolationRule implements ViolationRule {
+    private ViolationCheckContext context;
 
-public class ViolationRuleConfiguration extends RuleConfiguration<ViolationRule> {
+    public ViolationCheckContext getContext() {
+        return context;
+    }
 
-    public ViolationRuleConfiguration(final Class<? extends ViolationRule> ruleClass, final Map<String, String> arguments) {
-        super(ruleClass, arguments);
+    public void setContext(final ViolationCheckContext context) {
+        this.context = context;
     }
 }

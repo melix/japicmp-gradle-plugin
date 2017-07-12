@@ -2,7 +2,12 @@ import japicmp.model.JApiChangeStatus
 import japicmp.model.JApiClass
 import japicmp.model.JApiCompatibility
 import japicmp.model.JApiCompatibilityChange
+import me.champeau.gradle.japicmp.report.AbstractContextAwareViolationRule
+import me.champeau.gradle.japicmp.report.PostProcessViolationsRule
+import me.champeau.gradle.japicmp.report.SetupRule
 import me.champeau.gradle.japicmp.report.Violation
+import me.champeau.gradle.japicmp.report.ViolationCheckContext
+import me.champeau.gradle.japicmp.report.ViolationCheckContextWithViolations
 import me.champeau.gradle.japicmp.report.ViolationRule
 
 plugins {
@@ -64,6 +69,9 @@ task japicmpChange(type: me.champeau.gradle.japicmp.JapicmpTask) {
         reportName = 'rich.html'
         description = 'A test of rich report'
         addRule(JApiCompatibilityChange.CLASS_NO_LONGER_PUBLIC, GenericRule)
+        addSetupRule(MySetupRule)
+        addPostProcessRule(MyTearDownRule)
+        addRule(ContextAwareRule)
     }
 }
 
@@ -74,5 +82,32 @@ class GenericRule implements ViolationRule {
         if (member instanceof JApiClass && member.fullyQualifiedName in['A', 'org.apache.commons.lang3.text.WordUtils']) {
             Violation.info(member, "This class is deprecated")
         }
+    }
+}
+
+class MySetupRule implements SetupRule {
+
+    @Override
+    void execute(final ViolationCheckContext violationCheckContext) {
+        violationCheckContext.userData.executed = false
+    }
+}
+
+class ContextAwareRule extends AbstractContextAwareViolationRule {
+
+    @Override
+    Violation maybeViolation(final JApiCompatibility member) {
+        context.userData.executed = true
+
+        null
+    }
+}
+
+class MyTearDownRule implements PostProcessViolationsRule {
+
+    @Override
+    void execute(final ViolationCheckContextWithViolations violationCheckContextWithViolations) {
+        assert violationCheckContextWithViolations.userData.executed == true
+        assert !violationCheckContextWithViolations.violations.isEmpty()
     }
 }

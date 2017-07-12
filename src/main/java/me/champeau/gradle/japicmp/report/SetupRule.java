@@ -15,11 +15,7 @@
  */
 package me.champeau.gradle.japicmp.report;
 
-import java.util.Map;
+import org.gradle.api.Action;
 
-public class ViolationRuleConfiguration extends RuleConfiguration<ViolationRule> {
-
-    public ViolationRuleConfiguration(final Class<? extends ViolationRule> ruleClass, final Map<String, String> arguments) {
-        super(ruleClass, arguments);
-    }
+public interface SetupRule extends Action<ViolationCheckContext> {
 }

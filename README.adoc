@@ -197,3 +197,78 @@ richReport {
    addRule(AcceptedRegressionRule, acceptedViolations)
 }
 ----
+
+=== Setup and post-process rules
+
+Since release 0.2.2, the plugin also supports setup and post-process rules. Setup rules allow setting up some global
+context that can be accessed by rules extending `AbstractContextAwareViolationRule`. This can be useful when you need
+to share data between rules, and perform a final check in a post-process rule.
+
+Setup rules need to implement `SetupRule`:
+
+[source,groovy]
+----
+class MySetupRule implements SetupRule {
+
+    @Override
+    void execute(final ViolationCheckContext violationCheckContext) {
+        // this is going to be executed before any other rule is executed
+        violationCheckContext.userData.executed = false
+    }
+}
+----
+
+and declared using `addSetupRule`:
+
+
+[source,groovy]
+----
+richReport {
+   addSetupRule(MySetupRule)
+}
+----
+
+Then the context can be accessed in rules implementing `AbstractContextAwareViolationRule`:
+
+[source,groovy]
+----
+class ContextAwareRule extends AbstractContextAwareViolationRule {
+
+    @Override
+    Violation maybeViolation(final JApiCompatibility member) {
+        // this rule is accessing the global context and can mutate user data
+        context.userData.executed = true
+
+        return null
+    }
+}
+----
+
+And then a post-process rule has access to the user data, and can also mutate the actual list of violations per class,
+before the report is generated:
+
+[source,groovy]
+----
+class MyTearDownRule implements PostProcessViolationsRule {
+
+    @Override
+    void execute(final ViolationCheckContextWithViolations violationCheckContextWithViolations) {
+        // this rule is executed once all checks have been performed, just before the generation
+        // of the report
+        // it gives the opportunity to add additional violations, or filter them, or fail
+        // with a custom error
+        assert violationCheckContextWithViolations.userData.executed == true
+        assert !violationCheckContextWithViolations.violations.isEmpty()
+    }
+}
+----
+
+It needs to be wired in using the `addPostProcessRule` hook:
+
+[source,groovy]
+----
+richReport {
+   addPostProcessRule(MySetupRule)
+}
+----
+

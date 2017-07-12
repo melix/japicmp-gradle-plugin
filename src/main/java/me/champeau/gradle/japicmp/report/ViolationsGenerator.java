@@ -39,6 +39,9 @@ public class ViolationsGenerator {
     private final Map<JApiChangeStatus, List<ViolationRule>> statusRules = new HashMap<JApiChangeStatus, List<ViolationRule>>();
     private final List<ViolationRule> genericRules = new ArrayList<ViolationRule>();
 
+    private final List<SetupRule> setupRules = new ArrayList<>();
+    private final List<PostProcessViolationsRule> postProcessRules = new ArrayList<>();
+
     public ViolationsGenerator(final List<String> includePatterns, final List<String> excludePatterns) {
         this.includePatterns = toPatterns(includePatterns);
         this.excludePatterns = toPatterns(excludePatterns);
@@ -62,6 +65,14 @@ public class ViolationsGenerator {
             }
         }
         return false;
+    }
+
+    public void addRule(SetupRule rule) {
+        setupRules.add(rule);
+    }
+
+    public void addRule(PostProcessViolationsRule rule) {
+        postProcessRules.add(rule);
     }
 
     public void addRule(ViolationRule rule) {
@@ -88,10 +99,35 @@ public class ViolationsGenerator {
 
     public Map<String, List<Violation>> toViolations(List<JApiClass> classes) {
         Context ctx = new Context();
+        for (SetupRule setupRule : setupRules) {
+            setupRule.execute(ctx);
+        }
+        injectContextIntoRules(ctx);
         for (JApiClass aClass : classes) {
             maybeProcess(aClass, ctx);
         }
+        for (PostProcessViolationsRule postProcessViolationsRule : postProcessRules) {
+            postProcessViolationsRule.execute(ctx);
+        }
         return ctx.violations;
+    }
+
+    private void injectContextIntoRules(final ViolationCheckContext context) {
+        for (List<ViolationRule> rules : apiCompatibilityRules.values()) {
+            injectContextIntoRules(context, rules);
+        }
+        for (List<ViolationRule> rules : statusRules.values()) {
+            injectContextIntoRules(context, rules);
+        }
+        injectContextIntoRules(context, genericRules);
+    }
+
+    private void injectContextIntoRules(final ViolationCheckContext context, final List<ViolationRule> rules) {
+        for (ViolationRule rule : rules) {
+            if (rule instanceof AbstractContextAwareViolationRule) {
+                ((AbstractContextAwareViolationRule) rule).setContext(context);
+            }
+        }
     }
 
     private void maybeProcess(JApiClass clazz, Context context) {
@@ -161,9 +197,10 @@ public class ViolationsGenerator {
         }
     }
 
-    private static class Context {
+    private static class Context implements ViolationCheckContextWithViolations {
         // violations per fully-qualified class name
         private final Map<String, List<Violation>> violations = new LinkedHashMap<String, List<Violation>>();
+        private final Map<String, ?> userData = new LinkedHashMap<>();
 
         private String currentClass;
 
@@ -180,6 +217,16 @@ public class ViolationsGenerator {
                 this.violations.put(currentClass, violations);
             }
             violations.add(v);
+        }
+
+        @Override
+        public Map<String, ?> getUserData() {
+            return userData;
+        }
+
+        @Override
+        public Map<String, List<Violation>> getViolations() {
+            return violations;
         }
     }
 }
