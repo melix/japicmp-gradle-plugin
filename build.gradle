@@ -24,4 +24,4 @@ dependencies {
 }
 
 // make sure we have proper input/output annotations before publishing
-publishPlugins.dependsOn('validateTask')
+publishPlugins.dependsOn(validateTaskProperties)
