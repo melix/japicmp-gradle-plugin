@@ -7,6 +7,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.CompileClasspath;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Nested;
@@ -26,6 +27,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@CacheableTask
 public class JapicmpTask extends DefaultTask {
 
     private List<String> packageIncludes = new ArrayList<>();
@@ -252,7 +254,6 @@ public class JapicmpTask extends DefaultTask {
         this.includeSynthetic = includeSynthetic;
     }
 
-    @Input
     @CompileClasspath
     public FileCollection getOldClasspath() {
         return oldClasspath;
@@ -262,7 +263,6 @@ public class JapicmpTask extends DefaultTask {
         this.oldClasspath = oldClasspath;
     }
 
-    @Input
     @CompileClasspath
     public FileCollection getNewClasspath() {
         return newClasspath;
@@ -272,7 +272,6 @@ public class JapicmpTask extends DefaultTask {
         this.newClasspath = newClasspath;
     }
 
-    @Input
     @Optional
     @CompileClasspath
     public FileCollection getOldArchives() {
@@ -283,7 +282,6 @@ public class JapicmpTask extends DefaultTask {
         this.oldArchives = oldArchives;
     }
 
-    @Input
     @Optional
     @CompileClasspath
     public FileCollection getNewArchives() {
@@ -309,7 +307,6 @@ public class JapicmpTask extends DefaultTask {
     }
 
     @Optional
-    @Input
     @Nested
     public RichReport getRichReport() {
         return richReport;

@@ -22,3 +22,6 @@ dependencies {
     compile localGroovy()
     compile gradleApi()
 }
+
+// make sure we have proper input/output annotations before publishing
+publishPlugins.dependsOn('validateTask')

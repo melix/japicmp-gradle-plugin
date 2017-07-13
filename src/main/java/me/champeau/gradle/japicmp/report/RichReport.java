@@ -4,6 +4,7 @@ import japicmp.model.JApiChangeStatus;
 import japicmp.model.JApiCompatibilityChange;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Optional;
+import org.gradle.api.tasks.OutputDirectory;
 
 import java.io.File;
 import java.io.Serializable;
@@ -96,7 +97,7 @@ public class RichReport implements Serializable {
     }
 
     @Optional
-    @Input
+    @OutputDirectory
     public File getDestinationDir() {
         return destinationDir;
     }
