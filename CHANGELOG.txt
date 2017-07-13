@@ -1,3 +1,19 @@
+0.2.3
+-----
+   * Make task cacheable
+   * Fix incorrect task @Input annotations
+0.2.2
+-----
+   * Add ability to declare setup and post processor rules
+0.2.1
+-----
+   * Bugfix release
+0.2.0
+-----
+   * Rewrote plugin for Gradle 4+
+   * Use the worker API
+   * New reporting API
+   * Upgrade to JApiCmp 0.10.0
 0.1.2
    * Upgrade to JApiCmp 0.7.2
 -----
