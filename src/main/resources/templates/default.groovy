@@ -45,9 +45,9 @@ html {
         meta name: "viewport", content: "width=device-width, initial-scale=1"
 
         title(title)
-        link href: "http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css", rel: "stylesheet"
-        link href: "http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css", rel: "stylesheet"
-        link href: "http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css", rel: "stylesheet"
+        link href: "https://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css", rel: "stylesheet"
+        link href: "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css", rel: "stylesheet"
+        link href: "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css", rel: "stylesheet"
     }
 
     body {
@@ -129,8 +129,8 @@ html {
                 }
             }
 
-            script(src: "http://code.jquery.com/jquery-1.11.0.min.js") {}
-            script(src: "http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js") {}
+            script(src: "https://code.jquery.com/jquery-1.11.0.min.js") {}
+            script(src: "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js") {}
             script {
                 yieldUnescaped '''
 $(document).ready(function () {
