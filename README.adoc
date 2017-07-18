@@ -4,7 +4,8 @@
 :gradle-url: http://gradle.org/
 :plugin-version: 0.2.4
 
-image:https://travis-ci.org/melix/japicmp-gradle-plugin.png?branch=master["Build Status", link="https://travis-ci.org/melix/japicmp-gradle-plugin"]
+image:http://img.shields.io/travis/melix/japicmp-gradle-plugin/master.svg["Build Status (travis)", link="https://travis-ci.org/melix/japicmp-gradle-plugin"]
+image:http://img.shields.io/badge/license-ASF2-blue.svg["Apache License 2", link="http://www.apache.org/licenses/LICENSE-2.0.txt"]
 
 The japicmp-gradle-plugin provides binary compatibility reporting through {japicmp-url}[JApicmp] using {gradle-url}[Gradle].
 
@@ -15,6 +16,7 @@ NOTE: Version 0.2+ of this plugin is NOT compatible with 0.1
 This plugin requires Gradle 4+. Use the following snippet inside a Gradle build file:
 
 [source,groovy]
+[subs="attributes"]
 .build.gradle
 ----
 buildscript {
@@ -32,6 +34,7 @@ apply plugin: 'me.champeau.gradle.japicmp'
 or
 
 [source,groovy]
+[subs="attributes"]
 ----
 plugins {
     id 'me.champeau.gradle.japicmp' version '{plugin-version}'
