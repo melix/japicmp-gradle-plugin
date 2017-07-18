@@ -1,3 +1,7 @@
+0.2.4
+-----
+   * Use https for external resources in report
+   * Add ability to get the current class name in the context
 0.2.3
 -----
    * Make task cacheable

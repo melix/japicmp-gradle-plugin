@@ -160,19 +160,24 @@ public class ViolationsGenerator {
     }
 
     private void processClass(final JApiClass clazz, final Context context) {
-        context.currentClass = clazz.getFullyQualifiedName();
-        processAllChanges(clazz, context);
-        for (JApiField field : clazz.getFields()) {
-            processAllChanges(field, context);
-        }
-        for (JApiMethod method : clazz.getMethods()) {
-            processAllChanges(method, context);
-        }
-        for (JApiConstructor constructor : clazz.getConstructors()) {
-            processAllChanges(constructor, context);
-        }
-        for (JApiImplementedInterface anInterface : clazz.getInterfaces()) {
-            processAllChanges(anInterface, context);
+        String oldClass = context.currentClass;
+        try {
+            context.currentClass = clazz.getFullyQualifiedName();
+            processAllChanges(clazz, context);
+            for (JApiField field : clazz.getFields()) {
+                processAllChanges(field, context);
+            }
+            for (JApiMethod method : clazz.getMethods()) {
+                processAllChanges(method, context);
+            }
+            for (JApiConstructor constructor : clazz.getConstructors()) {
+                processAllChanges(constructor, context);
+            }
+            for (JApiImplementedInterface anInterface : clazz.getInterfaces()) {
+                processAllChanges(anInterface, context);
+            }
+        } finally {
+            context.currentClass = oldClass;
         }
     }
 
@@ -217,6 +222,11 @@ public class ViolationsGenerator {
                 this.violations.put(currentClass, violations);
             }
             violations.add(v);
+        }
+
+        @Override
+        public String getClassName() {
+            return currentClass;
         }
 
         @Override

@@ -98,7 +98,7 @@ class ContextAwareRule extends AbstractContextAwareViolationRule {
     @Override
     Violation maybeViolation(final JApiCompatibility member) {
         context.userData.executed = true
-
+        assert context.className != null
         null
     }
 }
