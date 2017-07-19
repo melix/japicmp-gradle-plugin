@@ -1,3 +1,6 @@
+0.2.5
+-----
+   * Add support for default rules
 0.2.4
 -----
    * Use https for external resources in report
