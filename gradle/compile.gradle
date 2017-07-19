@@ -38,3 +38,8 @@ dependencies {
 tasks.withType(JavaCompile) {
     options.incremental = true
 }
+
+test {
+    inputs.dir("src/test/test-projects")
+            .withPropertyName('testProjects')
+}

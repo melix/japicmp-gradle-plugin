@@ -13,24 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package me.champeau.gradle.japicmp.report;
+package me.champeau.gradle.japicmp.report.stdrules;
 
-import java.util.Map;
+import japicmp.model.JApiCompatibility;
+import me.champeau.gradle.japicmp.report.SetupRule;
+import me.champeau.gradle.japicmp.report.ViolationCheckContext;
 
-public interface ViolationCheckContext {
-    /**
-     * Returns the fully-qualified class name of the class being currently checked
-     * @return the fully-qualified class name of the class being currently checked, or null if it's a pre/post rule
-     */
-    String getClassName();
+import java.util.HashSet;
 
-    /**
-     * Returns a map that can be used by the writer of a rule to read and write arbitrary data.
-     * @return a user-data map, never null
-     */
-    Map<String, ?> getUserData();
+public class RecordSeenMembersSetup implements SetupRule {
+    static final String SEEN = RecordSeenMembersSetup.class.getName();
 
-    <T> T getUserData(String key);
-
-    <T> void putUserData(String key, T value);
+    @Override
+    public void execute(final ViolationCheckContext violationCheckContext) {
+        violationCheckContext.putUserData(SEEN, new HashSet<JApiCompatibility>());
+    }
 }

@@ -24,6 +24,10 @@ import japicmp.model.JApiField;
 import japicmp.model.JApiHasChangeStatus;
 import japicmp.model.JApiImplementedInterface;
 import japicmp.model.JApiMethod;
+import me.champeau.gradle.japicmp.report.stdrules.UnchangedMemberRule;
+import me.champeau.gradle.japicmp.report.stdrules.BinaryIncompatibleRule;
+import me.champeau.gradle.japicmp.report.stdrules.RecordSeenMembersSetup;
+import me.champeau.gradle.japicmp.report.stdrules.SourceCompatibleRule;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -98,6 +102,7 @@ public class ViolationsGenerator {
     }
 
     public Map<String, List<Violation>> toViolations(List<JApiClass> classes) {
+        addDefaultRuleIfNotConfigured();
         Context ctx = new Context();
         for (SetupRule setupRule : setupRules) {
             setupRule.execute(ctx);
@@ -110,6 +115,25 @@ public class ViolationsGenerator {
             postProcessViolationsRule.execute(ctx);
         }
         return ctx.violations;
+    }
+
+    private void addDefaultRuleIfNotConfigured() {
+        if (setupRules.isEmpty()
+                && postProcessRules.isEmpty()
+                && apiCompatibilityRules.isEmpty()
+                && statusRules.isEmpty()
+                && genericRules.isEmpty()) {
+            addDefaultRules();
+        }
+    }
+
+    public void addDefaultRules() {
+        setupRules.add(new RecordSeenMembersSetup());
+        addRule(JApiChangeStatus.NEW, new SourceCompatibleRule(Severity.info, "has been added in source compatible way"));
+        addRule(JApiChangeStatus.MODIFIED, new SourceCompatibleRule(Severity.info, "has been modified in source compatible way"));
+        addRule(JApiChangeStatus.UNCHANGED, new UnchangedMemberRule());
+        genericRules.add(new BinaryIncompatibleRule());
+        genericRules.add(new SourceCompatibleRule());
     }
 
     private void injectContextIntoRules(final ViolationCheckContext context) {
@@ -182,16 +206,18 @@ public class ViolationsGenerator {
     }
 
     private void processAllChanges(final JApiCompatibility elt, final Context context) {
-        processElement(elt, context);
+        processStatusChanges(elt, context);
+        processCompatibilityChanges(elt, context);
+        processGenericRules(elt, context);
+    }
+
+    private void processCompatibilityChanges(final JApiCompatibility elt, final Context context) {
         for (JApiCompatibilityChange compatibilityChange : elt.getCompatibilityChanges()) {
             processCompatibilityChange(compatibilityChange, elt, context);
         }
     }
 
-    private void processElement(final JApiCompatibility elt, final Context context) {
-        for (ViolationRule genericRule : genericRules) {
-            context.maybeAddViolation(genericRule.maybeViolation(elt));
-        }
+    private void processStatusChanges(final JApiCompatibility elt, final Context context) {
         if (elt instanceof JApiHasChangeStatus) {
             List<ViolationRule> violationRules = statusRules.get(((JApiHasChangeStatus) elt).getChangeStatus());
             if (violationRules != null) {
@@ -202,10 +228,16 @@ public class ViolationsGenerator {
         }
     }
 
+    private void processGenericRules(final JApiCompatibility elt, final Context context) {
+        for (ViolationRule genericRule : genericRules) {
+            context.maybeAddViolation(genericRule.maybeViolation(elt));
+        }
+    }
+
     private static class Context implements ViolationCheckContextWithViolations {
         // violations per fully-qualified class name
         private final Map<String, List<Violation>> violations = new LinkedHashMap<String, List<Violation>>();
-        private final Map<String, ?> userData = new LinkedHashMap<>();
+        private final Map<String, Object> userData = new LinkedHashMap<>();
 
         private String currentClass;
 
@@ -232,6 +264,17 @@ public class ViolationsGenerator {
         @Override
         public Map<String, ?> getUserData() {
             return userData;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public <T> T getUserData(final String key) {
+            return (T) userData.get(key);
+        }
+
+        @Override
+        public <T> void putUserData(final String key, final T value) {
+            userData.put(key, value);
         }
 
         @Override

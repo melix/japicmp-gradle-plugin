@@ -68,6 +68,10 @@ public class Violation {
         return new Violation(member, Severity.accepted, explanation);
     }
 
+    public static Violation any(JApiCompatibility member, Severity severity, String explanation) {
+        return new Violation(member, severity, explanation);
+    }
+
     public JApiCompatibility getMember() {
         return member;
     }

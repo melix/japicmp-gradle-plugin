@@ -113,6 +113,9 @@ destinationDir:: the directory where to store the report
 reportName:: file name of the generated report (defaults to `rich-report.html`)
 title:: a title for the report
 description:: a description for the report
+addDefaultRules:: a boolean, indicating whether the default rules should be added or not.
+
+If no rules are explicitly defined, the default rules are applied. If any rule is added, the default rules won't be applied _unless_ `addDefaultRules` is set to `true`.
 
 === Custom rules
 
@@ -134,6 +137,12 @@ Rules can be applied to 3 different levels:
 * all members (a generic rule applied unconditionnaly)
 * on specific change types (`NEW`, `REMOVED`, `UNCHANGED`, `MODIFIED`), see `JApiChangeStatus`
 * on specific compatibility change descriptors (see `JApiCompatibilityChange`)
+
+Rules are executed in the following order:
+
+. status change first
+. specific compatibility change
+. generic rules
 
 For example, imagine that we want to check that all new methods are annotated with `@Incubating` (this is a rule in the Gradle project).
 Then, you need to create a rule class which will implement that check:

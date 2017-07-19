@@ -201,6 +201,9 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                     throw new GradleException("Unable to instantiate rule", e);
                 }
             }
+            if (richReport.isAddDefaultRules()) {
+                generator.addDefaultRules();
+            }
 
             Map<String, List<Violation>> violations = generator.toViolations(jApiClasses);
             for (List<Violation> violationList : violations.values()) {

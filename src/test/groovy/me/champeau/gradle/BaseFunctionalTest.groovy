@@ -82,4 +82,12 @@ abstract class BaseFunctionalTest extends Specification {
                 .withPluginClasspath()
                 .build()
     }
+
+    BuildResult fails(String... tasks) {
+        GradleRunner.create()
+                .withProjectDir(testProjectDir.root)
+                .withArguments('-s', *(tasks as List))
+                .withPluginClasspath()
+                .buildAndFail()
+    }
 }

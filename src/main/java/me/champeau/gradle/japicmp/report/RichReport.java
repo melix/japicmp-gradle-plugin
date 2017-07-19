@@ -22,6 +22,7 @@ public class RichReport implements Serializable {
     private String title;
     private String description;
     private List<RuleConfiguration> rules = new ArrayList<RuleConfiguration>();
+    private boolean addDefaultRules;
 
     public void addRule(Class<? extends ViolationRule> rule, Map<String, String> params) {
         rules.add(new ViolationRuleConfiguration(rule, params));
@@ -145,5 +146,13 @@ public class RichReport implements Serializable {
         this.rules = rules;
     }
 
+    @Input
+    @Optional
+    public boolean isAddDefaultRules() {
+        return addDefaultRules;
+    }
 
+    public void setAddDefaultRules(final boolean addDefaultRules) {
+        this.addDefaultRules = addDefaultRules;
+    }
 }

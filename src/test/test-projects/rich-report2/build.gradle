@@ -1,0 +1,27 @@
+plugins {
+    id 'me.champeau.gradle.japicmp'
+}
+
+repositories {
+    jcenter()
+}
+
+configurations {
+    baseline
+    current
+}
+
+dependencies {
+    baseline 'org.apache.commons:commons-lang3:3.1'
+    current 'org.apache.commons:commons-lang3:3.2'
+}
+
+task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath = configurations.baseline
+    newClasspath = configurations.current
+    accessModifier = 'public'
+    richReport {
+        reportName = 'rich.html'
+        description = 'A test of rich report'
+    }
+}
