@@ -53,16 +53,18 @@ oldArchives:: The jar files which will be used as the baseline for comparison. T
 newArchives:: The jar files we want to analyze. Type: Type: _FileCollection_.
 onlyModified:: Outputs only modified classes/methods. If not set to true, all classes and methods are printed. Type: _boolean_. Default value: _false_
 onlyBinaryIncompatibleModified:: Outputs only classes/methods with modifications that result in binary incompatibility. Type: _boolean_. Default value: _false_
-packagesToInclude:: List of package names to include, * can be used as wildcard. Type: _List<String>_
-packagesToExclude:: List of package names to exclude, * can be used as wildcard. Type: _List<String>_
+packageIncludes:: List of package names to include, * can be used as wildcard. Type: _List<String>_
+packageExcludes:: List of package names to exclude, * can be used as wildcard. Type: _List<String>_
 accessModifier:: Sets the access modifier level (public, package, protected, private). Type: _String_. Default value: _public_
 failOnModification:: When set to true, the build fails in case a modification has been detected. Type: _boolean_. Default value: _false_
 xmlOutputFile:: Path to the generated XML report. Type: _File_. Default value: _null_
 htmlOutputFile:: Path to the generated HTML report. Type: _File_. Default value: _null_
 txtOutputFile:: Path to the generated TXT report. Type: _File_. Default value: _null_
 includeSynthetic:: Synthetic classes and class members (like e.g. bridge methods) are not tracked per default. This new option enables the tracking of such kind of classes and class members
+ignoreMissingClasses:: Ignores all superclasses or interfaces that missing on the classpath. Default value: _false_
 
 If you don't set _oldArchives_ and _newArchives_, the plugin will infer them from the _oldClasspath_ and _newClasspath_ properties:
+
    * if you set the classpath to a configuration, the archives to compare will be the first level dependencies of that configuration
    * if you set the classpath to a simple file collection, all archives will be compared
 
@@ -74,7 +76,7 @@ Add the following to your build file:
 ----
 task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldClasspath = files('path/to/reference.jar')
-    newClasspath = files(jar.archivePath')
+    newClasspath = files(jar.archivePath)
     onlyModified = true
     failOnModification = true
     txtOutputFile = file("$buildDir/reports/japi.txt")
