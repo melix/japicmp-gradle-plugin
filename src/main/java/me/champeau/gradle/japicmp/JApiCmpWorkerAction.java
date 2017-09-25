@@ -69,6 +69,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                 configuration.newArchives,
                 configuration.onlyModified,
                 configuration.onlyBinaryIncompatibleModified,
+                configuration.failOnSourceIncompatibility,
                 configuration.accessModifier,
                 configuration.xmlOutputFile,
                 configuration.htmlOutputFile,
@@ -231,7 +232,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         }
 
 
-        if ((failOnModification && hasBreakingChange(jApiClasses)) || hasCustomViolations) {
+        if ((failOnModification && hasBreakingChange(jApiClasses, failOnSourceIncompatibility)) || hasCustomViolations) {
             String reportLink;
             try {
                 reportLink = reportFile != null ? new URI("file", "", reportFile.toURI().getPath(), null, null).toString() : null;
@@ -249,9 +250,9 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         }
     }
 
-    private static boolean hasBreakingChange(final List<JApiClass> jApiClasses) {
+    private static boolean hasBreakingChange(final List<JApiClass> jApiClasses, final boolean failOnSourceIncompatibility) {
         for (JApiClass jApiClass : jApiClasses) {
-            if (!jApiClass.isBinaryCompatible()) {
+            if (!jApiClass.isBinaryCompatible() || (failOnSourceIncompatibility && !jApiClass.isSourceCompatible())) {
                 return true;
             }
         }

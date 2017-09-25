@@ -1,0 +1,37 @@
+plugins {
+    id 'java'
+    id 'me.champeau.gradle.japicmp'
+}
+
+sourceSets {
+    main2
+}
+
+task jarv2(type:Jar) {
+    classifier = 'v2'
+    from sourceSets.main2.output
+}
+
+task japicmpIgnoresSourceCompatabilityByDefault(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    dependsOn jar, jarv2
+    oldClasspath = files(jar.archivePath)
+    newClasspath = files(jarv2.archivePath)
+    failOnModification = true
+}
+
+task japicmpFailsOnSourceIncompatability(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    dependsOn jar, jarv2
+    oldClasspath = files(jar.archivePath)
+    newClasspath = files(jarv2.archivePath)
+    failOnSourceIncompatibility = true
+    packageExcludes = ['me.champeau.gradle.japicmp.internal']
+}
+
+task japicmpFailsOnSourceIncompatabilityNonPublic(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    dependsOn jar, jarv2
+    oldClasspath = files(jar.archivePath)
+    newClasspath = files(jarv2.archivePath)
+    failOnSourceIncompatibility = true
+    packageExcludes = ['me.champeau.gradle.japicmp']
+    accessModifier = 'package-private'
+}

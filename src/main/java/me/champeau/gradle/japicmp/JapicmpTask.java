@@ -35,6 +35,7 @@ public class JapicmpTask extends DefaultTask {
     private String accessModifier = "public";
     private boolean onlyModified = false;
     private boolean onlyBinaryIncompatibleModified = false;
+    private boolean failOnSourceIncompatibility = false;
     private File xmlOutputFile;
     private File htmlOutputFile;
     private File txtOutputFile;
@@ -86,6 +87,7 @@ public class JapicmpTask extends DefaultTask {
                                 current,
                                 getOnlyModified(),
                                 getOnlyBinaryIncompatibleModified(),
+                                getFailOnSourceIncompatibility(),
                                 getAccessModifier(),
                                 getXmlOutputFile(),
                                 getHtmlOutputFile(),
@@ -194,6 +196,16 @@ public class JapicmpTask extends DefaultTask {
 
     public void setOnlyBinaryIncompatibleModified(boolean onlyBinaryIncompatibleModified) {
         this.onlyBinaryIncompatibleModified = onlyBinaryIncompatibleModified;
+    }
+
+    @Input
+    @Optional
+    public boolean getFailOnSourceIncompatibility() {
+        return failOnSourceIncompatibility;
+    }
+
+    public void setFailOnSourceIncompatibility(boolean failOnSourceIncompatibility) {
+        this.failOnSourceIncompatibility = failOnSourceIncompatibility;
     }
 
     @OutputFile
