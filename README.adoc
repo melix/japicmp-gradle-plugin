@@ -56,6 +56,7 @@ onlyBinaryIncompatibleModified:: Outputs only classes/methods with modifications
 packageIncludes:: List of package names to include, * can be used as wildcard. Type: _List<String>_
 packageExcludes:: List of package names to exclude, * can be used as wildcard. Type: _List<String>_
 accessModifier:: Sets the access modifier level (public, package, protected, private). Type: _String_. Default value: _public_
+failOnSourceIncompatibility:: Fails if the changes result in source level incompatibility. Setting this to `true` also implicitly enables `failOnModification`. imType: _boolean_. Default value: _false_
 failOnModification:: When set to true, the build fails in case a modification has been detected. Type: _boolean_. Default value: _false_
 xmlOutputFile:: Path to the generated XML report. Type: _File_. Default value: _null_
 htmlOutputFile:: Path to the generated HTML report. Type: _File_. Default value: _null_
