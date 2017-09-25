@@ -32,6 +32,14 @@ public class JapicmpTask extends DefaultTask {
 
     private List<String> packageIncludes = new ArrayList<>();
     private List<String> packageExcludes = new ArrayList<>();
+    private List<String> classIncludes = new ArrayList<>();
+    private List<String> classExcludes = new ArrayList<>();
+    private List<String> methodIncludes = new ArrayList<>();
+    private List<String> methodExcludes = new ArrayList<>();
+    private List<String> fieldIncludes = new ArrayList<>();
+    private List<String> fieldExcludes = new ArrayList<>();
+    private List<String> annotationIncludes = new ArrayList<>();
+    private List<String> annotationExcludes = new ArrayList<>();
     private String accessModifier = "public";
     private boolean onlyModified = false;
     private boolean onlyBinaryIncompatibleModified = false;
@@ -81,6 +89,14 @@ public class JapicmpTask extends DefaultTask {
                                 getIgnoreMissingClasses(),
                                 getPackageIncludes(),
                                 getPackageExcludes(),
+                                getClassIncludes(),
+                                getClassExcludes(),
+                                getMethodIncludes(),
+                                getMethodExcludes(),
+                                getFieldIncludes(),
+                                getFieldExcludes(),
+                                getAnnotationIncludes(),
+                                getAnnotationExcludes(),
                                 toArchives(getOldClasspath()),
                                 toArchives(getNewClasspath()),
                                 baseline,
@@ -158,6 +174,86 @@ public class JapicmpTask extends DefaultTask {
 
     public void setPackageExcludes(List<String> packageExcludes) {
         this.packageExcludes = packageExcludes;
+    }
+
+    @Input
+    @Optional
+    public List<String> getClassIncludes() {
+        return classIncludes;
+    }
+
+    public void setClassIncludes(List<String> classIncludes) {
+        this.classIncludes = classIncludes;
+    }
+
+    @Input
+    @Optional
+    public List<String> getClassExcludes() {
+        return classExcludes;
+    }
+
+    public void setClassExcludes(List<String> classExcludes) {
+        this.classExcludes = classExcludes;
+    }
+
+    @Input
+    @Optional
+    public List<String> getMethodIncludes() {
+        return methodIncludes;
+    }
+
+    public void setMethodIncludes(List<String> methodIncludes) {
+        this.methodIncludes = methodIncludes;
+    }
+
+    @Input
+    @Optional
+    public List<String> getMethodExcludes() {
+        return methodExcludes;
+    }
+
+    public void setMethodExcludes(List<String> methodExcludes) {
+        this.methodExcludes = methodExcludes;
+    }
+
+    @Input
+    @Optional
+    public List<String> getFieldIncludes() {
+        return fieldIncludes;
+    }
+
+    public void setFieldIncludes(List<String> fieldIncludes) {
+        this.fieldIncludes = fieldIncludes;
+    }
+
+    @Input
+    @Optional
+    public List<String> getFieldExcludes() {
+        return fieldExcludes;
+    }
+
+    public void setFieldExcludes(List<String> fieldExcludes) {
+        this.fieldExcludes = fieldExcludes;
+    }
+
+    @Input
+    @Optional
+    public List<String> getAnnotationIncludes() {
+        return annotationIncludes;
+    }
+
+    public void setAnnotationIncludes(List<String> annotationIncludes) {
+        this.annotationIncludes = annotationIncludes;
+    }
+
+    @Input
+    @Optional
+    public List<String> getAnnotationExcludes() {
+        return annotationExcludes;
+    }
+
+    public void setAnnotationExcludes(List<String> annotationExcludes) {
+        this.annotationExcludes = annotationExcludes;
     }
 
     @Input

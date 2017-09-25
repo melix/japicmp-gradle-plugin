@@ -26,6 +26,14 @@ public class JapiCmpWorkerConfiguration implements Serializable {
     protected final boolean ignoreMissingClasses;
     protected final List<String> packageIncludes;
     protected final List<String> packageExcludes;
+    protected final List<String> classIncludes;
+    protected final List<String> classExcludes;
+    protected final List<String> methodIncludes;
+    protected final List<String> methodExcludes;
+    protected final List<String> fieldIncludes;
+    protected final List<String> fieldExcludes;
+    protected final List<String> annotationIncludes;
+    protected final List<String> annotationExcludes;
     protected final List<JApiCmpWorkerAction.Archive> oldClasspath;
     protected final List<JApiCmpWorkerAction.Archive> newClasspath;
     protected final List<JApiCmpWorkerAction.Archive> oldArchives;
@@ -45,6 +53,14 @@ public class JapiCmpWorkerConfiguration implements Serializable {
                                       final boolean ignoreMissingClasses,
                                       final List<String> packageIncludes,
                                       final List<String> packageExcludes,
+                                      final List<String> classIncludes,
+                                      final List<String> classExcludes,
+                                      final List<String> methodIncludes,
+                                      final List<String> methodExcludes,
+                                      final List<String> fieldIncludes,
+                                      final List<String> fieldExcludes,
+                                      final List<String> annotationIncludes,
+                                      final List<String> annotationExcludes,
                                       final List<JApiCmpWorkerAction.Archive> oldClasspath,
                                       final List<JApiCmpWorkerAction.Archive> newClasspath,
                                       final List<JApiCmpWorkerAction.Archive> oldArchives,
@@ -63,6 +79,14 @@ public class JapiCmpWorkerConfiguration implements Serializable {
         this.ignoreMissingClasses = ignoreMissingClasses;
         this.packageIncludes = packageIncludes;
         this.packageExcludes = packageExcludes;
+        this.classIncludes = classIncludes;
+        this.classExcludes = classExcludes;
+        this.methodIncludes = methodIncludes;
+        this.methodExcludes = methodExcludes;
+        this.fieldIncludes = fieldIncludes;
+        this.fieldExcludes = fieldExcludes;
+        this.annotationIncludes = annotationIncludes;
+        this.annotationExcludes = annotationExcludes;
         this.oldClasspath = oldClasspath;
         this.newClasspath = newClasspath;
         this.oldArchives = oldArchives;
