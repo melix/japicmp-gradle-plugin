@@ -19,6 +19,12 @@ import japicmp.cmp.JApiCmpArchive;
 import japicmp.cmp.JarArchiveComparator;
 import japicmp.cmp.JarArchiveComparatorOptions;
 import japicmp.config.Options;
+import japicmp.filter.AnnotationBehaviorFilter;
+import japicmp.filter.AnnotationClassFilter;
+import japicmp.filter.AnnotationFieldFilter;
+import japicmp.filter.JavaDocLikeClassFilter;
+import japicmp.filter.JavadocLikeBehaviorFilter;
+import japicmp.filter.JavadocLikeFieldFilter;
 import japicmp.filter.JavadocLikePackageFilter;
 import japicmp.model.AccessModifier;
 import japicmp.model.JApiClass;
@@ -63,6 +69,14 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                 configuration.ignoreMissingClasses,
                 configuration.packageIncludes,
                 configuration.packageExcludes,
+                configuration.classIncludes,
+                configuration.classExcludes,
+                configuration.methodIncludes,
+                configuration.methodExcludes,
+                configuration.fieldIncludes,
+                configuration.fieldExcludes,
+                configuration.annotationIncludes,
+                configuration.annotationExcludes,
                 configuration.oldClasspath,
                 configuration.newClasspath,
                 configuration.oldArchives,
@@ -89,6 +103,35 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         for (String packageExclude : packageExcludes) {
             options.getFilters().getExcludes().add(new JavadocLikePackageFilter(packageExclude));
         }
+        for (String classInclude : classIncludes) {
+            options.getFilters().getIncludes().add(new JavaDocLikeClassFilter(classInclude));
+        }
+        for (String classExclude : classExcludes) {
+            options.getFilters().getExcludes().add(new JavaDocLikeClassFilter(classExclude));
+        }
+        for (String methodInclude : methodIncludes) {
+            options.getFilters().getIncludes().add(new JavadocLikeBehaviorFilter(methodInclude));
+        }
+        for (String methodExclude : methodExcludes) {
+            options.getFilters().getExcludes().add(new JavadocLikeBehaviorFilter(methodExclude));
+        }
+        for (String fieldInclude : fieldIncludes) {
+            options.getFilters().getIncludes().add(new JavadocLikeFieldFilter(fieldInclude));
+        }
+        for (String fieldExclude : fieldExcludes) {
+            options.getFilters().getExcludes().add(new JavadocLikeFieldFilter(fieldExclude));
+        }
+        for (String annotationInclude : annotationIncludes) {
+            options.getFilters().getIncludes().add(new AnnotationClassFilter(annotationInclude));
+            options.getFilters().getIncludes().add(new AnnotationFieldFilter(annotationInclude));
+            options.getFilters().getIncludes().add(new AnnotationBehaviorFilter(annotationInclude));
+        }
+        for (String annotationExclude : annotationExcludes) {
+            options.getFilters().getExcludes().add(new AnnotationClassFilter(annotationExclude));
+            options.getFilters().getExcludes().add(new AnnotationFieldFilter(annotationExclude));
+            options.getFilters().getExcludes().add(new AnnotationBehaviorFilter(annotationExclude));
+        }
+
         return options;
     }
 

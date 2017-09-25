@@ -55,6 +55,14 @@ onlyModified:: Outputs only modified classes/methods. If not set to true, all cl
 onlyBinaryIncompatibleModified:: Outputs only classes/methods with modifications that result in binary incompatibility. Type: _boolean_. Default value: _false_
 packageIncludes:: List of package names to include, * can be used as wildcard. Type: _List<String>_
 packageExcludes:: List of package names to exclude, * can be used as wildcard. Type: _List<String>_
+classIncludes:: List of classes to include. Type: _List<String>_
+classExcludes:: List of classes to exclude. Type: _List<String>_
+methodIncludes:: List of methods to include. Type: _List<String>_
+methodExcludes:: List of methods to exclude. Type: _List<String>_
+fieldIncludes:: List of fields to include. Type: _List<String>_
+fieldExcludes:: List of fields to exclude. Type: _List<String>_
+annotationIncludes:: List of annotations to include. The string must begin with '@'. Type: _List<String>_
+annotationExcludes:: List of annotations to exclude. The string must begin with '@'. Type: _List<String>_
 accessModifier:: Sets the access modifier level (public, package, protected, private). Type: _String_. Default value: _public_
 failOnModification:: When set to true, the build fails in case a modification has been detected. Type: _boolean_. Default value: _false_
 xmlOutputFile:: Path to the generated XML report. Type: _File_. Default value: _null_
