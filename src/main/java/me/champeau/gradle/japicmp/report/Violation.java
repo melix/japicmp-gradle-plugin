@@ -112,7 +112,7 @@ public class Violation {
             JApiConstructor method = (JApiConstructor) member;
             Optional<CtConstructor> changedMethod = method.getNewConstructor();
             if (!changedMethod.isPresent()) {
-                changedMethod = method.getNewConstructor();
+                changedMethod = method.getOldConstructor();
             }
             return "Constructor " + (changedMethod.isPresent() ? changedMethod.get().getLongName() : method.getName());
         }
