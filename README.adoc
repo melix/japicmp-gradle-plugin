@@ -92,6 +92,33 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
 }
 ----
 
+== Custom filtering
+
+The plugin supports adding filters for bytecode members before they are considered for API comparison:
+
+[source,groovy]
+----
+task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
+   ...
+   addIncludeFilter(MyCustomFilter)
+   addExcludeFilter(MyOtherFilter)
+}
+----
+
+where `MyIncludeFilter` and `MyExcludeFilter` are classes implementing types inheriting from `japicmp.filter.Filter`.
+
+For example, adding the following filter as an exclude filter will hide fields that are annotated with `@Custom` or have a name that contains `Custom` from the API comparison:
+
+[source,groovy]
+----
+class MyOtherFilter implements FieldFilter {
+    @Override
+    boolean matches(CtField field) {
+        return field.hasAnnotation("Custom") || field.name.contains("Custom")
+    }
+}
+----
+
 == Custom reports and failure conditions
 
 The plugin supports a DSL to generate custom reports based on the API comparison result. This has several advantages:
