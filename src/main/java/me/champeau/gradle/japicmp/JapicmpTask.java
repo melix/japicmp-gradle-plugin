@@ -1,5 +1,7 @@
 package me.champeau.gradle.japicmp;
 
+import japicmp.filter.Filter;
+import me.champeau.gradle.japicmp.filters.FilterConfiguration;
 import me.champeau.gradle.japicmp.report.RichReport;
 import me.champeau.gradle.japicmp.report.RuleConfiguration;
 import org.gradle.api.Action;
@@ -40,6 +42,8 @@ public class JapicmpTask extends DefaultTask {
     private List<String> fieldExcludes = new ArrayList<>();
     private List<String> annotationIncludes = new ArrayList<>();
     private List<String> annotationExcludes = new ArrayList<>();
+    private List<FilterConfiguration> includeFilters = new ArrayList<>();
+    private List<FilterConfiguration> excludeFilters = new ArrayList<>();
     private String accessModifier = "public";
     private boolean onlyModified = false;
     private boolean onlyBinaryIncompatibleModified = false;
@@ -64,17 +68,19 @@ public class JapicmpTask extends DefaultTask {
             public void execute(final WorkerConfiguration workerConfiguration) {
                 workerConfiguration.setIsolationMode(IsolationMode.PROCESS);
                 Set<File> classpath = new HashSet<>();
+                if (includeFilters != null) {
+                    for (FilterConfiguration configuration : includeFilters) {
+                        addClasspathFor(configuration.getFilterClass(), classpath);
+                    }
+                }
+                if (excludeFilters != null) {
+                    for (FilterConfiguration configuration : excludeFilters) {
+                        addClasspathFor(configuration.getFilterClass(), classpath);
+                    }
+                }
                 if (richReport != null) {
                     for (RuleConfiguration configuration : richReport.getRules()) {
-                        ProtectionDomain domain = configuration.getRuleClass().getProtectionDomain();
-                        CodeSource codeSource = domain.getCodeSource();
-                        if (codeSource != null) {
-                            try {
-                                classpath.add(new File(codeSource.getLocation().toURI()));
-                            } catch (URISyntaxException e) {
-                                // silent
-                            }
-                        }
+                        addClasspathFor(configuration.getRuleClass(), classpath);
                     }
                 }
                 workerConfiguration.setClasspath(classpath);
@@ -97,6 +103,8 @@ public class JapicmpTask extends DefaultTask {
                                 getFieldExcludes(),
                                 getAnnotationIncludes(),
                                 getAnnotationExcludes(),
+                                getIncludeFilters(),
+                                getExcludeFilters(),
                                 toArchives(getOldClasspath()),
                                 toArchives(getNewClasspath()),
                                 baseline,
@@ -116,6 +124,18 @@ public class JapicmpTask extends DefaultTask {
             }
         });
 
+    }
+
+    private void addClasspathFor(Class<?> clazz, Set<File> classpath) {
+        ProtectionDomain domain = clazz.getProtectionDomain();
+        CodeSource codeSource = domain.getCodeSource();
+        if (codeSource != null) {
+            try {
+                classpath.add(new File(codeSource.getLocation().toURI()));
+            } catch (URISyntaxException e) {
+                // silent
+            }
+        }
     }
 
     private List<JApiCmpWorkerAction.Archive> inferArchives(FileCollection fc) {
@@ -254,6 +274,34 @@ public class JapicmpTask extends DefaultTask {
 
     public void setAnnotationExcludes(List<String> annotationExcludes) {
         this.annotationExcludes = annotationExcludes;
+    }
+
+    @Input
+    @Optional
+    public List<FilterConfiguration> getIncludeFilters() {
+        return includeFilters;
+    }
+
+    public void setIncludeFilters(List<FilterConfiguration> includeFilters) {
+        this.includeFilters = includeFilters;
+    }
+
+    public void addIncludeFilter(Class<? extends Filter> includeFilterClass) {
+        includeFilters.add(new FilterConfiguration(includeFilterClass));
+    }
+
+    @Input
+    @Optional
+    public List<FilterConfiguration> getExcludeFilters() {
+        return excludeFilters;
+    }
+
+    public void setExcludeFilters(List<FilterConfiguration> excludeFilters) {
+        this.excludeFilters = excludeFilters;
+    }
+
+    public void addExcludeFilter(Class<? extends Filter> excludeFilterClass) {
+        excludeFilters.add(new FilterConfiguration(excludeFilterClass));
     }
 
     @Input

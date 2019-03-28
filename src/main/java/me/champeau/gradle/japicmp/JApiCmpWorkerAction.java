@@ -22,6 +22,7 @@ import japicmp.config.Options;
 import japicmp.filter.AnnotationBehaviorFilter;
 import japicmp.filter.AnnotationClassFilter;
 import japicmp.filter.AnnotationFieldFilter;
+import japicmp.filter.Filter;
 import japicmp.filter.JavaDocLikeClassFilter;
 import japicmp.filter.JavadocLikeBehaviorFilter;
 import japicmp.filter.JavadocLikeFieldFilter;
@@ -32,6 +33,7 @@ import japicmp.output.stdout.StdoutOutputGenerator;
 import japicmp.output.xml.XmlOutput;
 import japicmp.output.xml.XmlOutputGenerator;
 import japicmp.output.xml.XmlOutputGeneratorOptions;
+import me.champeau.gradle.japicmp.filters.FilterConfiguration;
 import me.champeau.gradle.japicmp.report.CompatibilityChangeViolationRuleConfiguration;
 import me.champeau.gradle.japicmp.report.PostProcessRuleConfiguration;
 import me.champeau.gradle.japicmp.report.PostProcessViolationsRule;
@@ -77,6 +79,8 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                 configuration.fieldExcludes,
                 configuration.annotationIncludes,
                 configuration.annotationExcludes,
+                configuration.includeFilters,
+                configuration.excludeFilters,
                 configuration.oldClasspath,
                 configuration.newClasspath,
                 configuration.oldArchives,
@@ -132,8 +136,22 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             options.getFilters().getExcludes().add(new AnnotationFieldFilter(annotationExclude));
             options.getFilters().getExcludes().add(new AnnotationBehaviorFilter(annotationExclude));
         }
+        for (FilterConfiguration includeFilter : includeFilters) {
+            options.getFilters().getIncludes().add(instantiateFilter(includeFilter));
+        }
+        for (FilterConfiguration excludeFilter : excludeFilters) {
+            options.getFilters().getExcludes().add(instantiateFilter(excludeFilter));
+        }
 
         return options;
+    }
+
+    private Filter instantiateFilter(FilterConfiguration includeFilter) {
+        try {
+            return includeFilter.getFilterClass().newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new GradleException("Unable to instantiate filter", e);
+        }
     }
 
     @Override
