@@ -1,3 +1,6 @@
+0.2.7
+-----
+   * Add support for filters
 0.2.5
 -----
    * Add support for default rules
