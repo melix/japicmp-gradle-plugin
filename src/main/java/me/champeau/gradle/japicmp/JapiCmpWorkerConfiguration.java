@@ -15,6 +15,7 @@
  */
 package me.champeau.gradle.japicmp;
 
+import me.champeau.gradle.japicmp.filters.FilterConfiguration;
 import me.champeau.gradle.japicmp.report.RichReport;
 
 import java.io.File;
@@ -34,6 +35,8 @@ public class JapiCmpWorkerConfiguration implements Serializable {
     protected final List<String> fieldExcludes;
     protected final List<String> annotationIncludes;
     protected final List<String> annotationExcludes;
+    protected final List<FilterConfiguration> includeFilters;
+    protected final List<FilterConfiguration> excludeFilters;
     protected final List<JApiCmpWorkerAction.Archive> oldClasspath;
     protected final List<JApiCmpWorkerAction.Archive> newClasspath;
     protected final List<JApiCmpWorkerAction.Archive> oldArchives;
@@ -61,6 +64,8 @@ public class JapiCmpWorkerConfiguration implements Serializable {
                                       final List<String> fieldExcludes,
                                       final List<String> annotationIncludes,
                                       final List<String> annotationExcludes,
+                                      final List<FilterConfiguration> includeFilters,
+                                      final List<FilterConfiguration> excludeFilters,
                                       final List<JApiCmpWorkerAction.Archive> oldClasspath,
                                       final List<JApiCmpWorkerAction.Archive> newClasspath,
                                       final List<JApiCmpWorkerAction.Archive> oldArchives,
@@ -87,6 +92,8 @@ public class JapiCmpWorkerConfiguration implements Serializable {
         this.fieldExcludes = fieldExcludes;
         this.annotationIncludes = annotationIncludes;
         this.annotationExcludes = annotationExcludes;
+        this.includeFilters = includeFilters;
+        this.excludeFilters = excludeFilters;
         this.oldClasspath = oldClasspath;
         this.newClasspath = newClasspath;
         this.oldArchives = oldArchives;
