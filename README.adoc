@@ -2,7 +2,7 @@
 :japicmp-url: https://github.com/siom79/japicmp
 :issues: https://github.com/melix/japicmp-gradle-plugin/issues
 :gradle-url: http://gradle.org/
-:plugin-version: 0.2.7
+:plugin-version: 0.2.8
 
 image:http://img.shields.io/travis/melix/japicmp-gradle-plugin/master.svg["Build Status (travis)", link="https://travis-ci.org/melix/japicmp-gradle-plugin"]
 image:http://img.shields.io/badge/license-ASF2-blue.svg["Apache License 2", link="http://www.apache.org/licenses/LICENSE-2.0.txt"]
