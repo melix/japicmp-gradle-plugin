@@ -103,10 +103,10 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         options.setIncludeSynthetic(includeSynthetic);
         options.getIgnoreMissingClasses().setIgnoreAllMissingClasses(ignoreMissingClasses);
         for (String packageInclude : packageIncludes) {
-            options.getFilters().getIncludes().add(new JavadocLikePackageFilter(packageInclude));
+            options.getFilters().getIncludes().add(new JavadocLikePackageFilter(packageInclude, true));
         }
         for (String packageExclude : packageExcludes) {
-            options.getFilters().getExcludes().add(new JavadocLikePackageFilter(packageExclude));
+            options.getFilters().getExcludes().add(new JavadocLikePackageFilter(packageExclude, true));
         }
         for (String classInclude : classIncludes) {
             options.getFilters().getIncludes().add(new JavaDocLikeClassFilter(classInclude));
@@ -195,8 +195,8 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
     private void generateOutput(JarArchiveComparator jarArchiveComparator) {
         // we create a dummy options because we don't want to avoid use of internal classes of JApicmp
         Options options = Options.newDefault();
-        options.setOldClassPath(com.google.common.base.Optional.of(toClasspath(oldClasspath)));
-        options.setNewClassPath(com.google.common.base.Optional.of(toClasspath(newClasspath)));
+        options.setOldClassPath(japicmp.util.Optional.of(toClasspath(oldClasspath)));
+        options.setNewClassPath(japicmp.util.Optional.of(toClasspath(newClasspath)));
         final List<JApiCmpArchive> baseline = toJapiCmpArchives(oldArchives);
         final List<JApiCmpArchive> current = toJapiCmpArchives(newArchives);
         List<JApiClass> jApiClasses = jarArchiveComparator.compare(baseline, current);
@@ -206,20 +206,26 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         options.setAccessModifier(AccessModifier.valueOf(accessModifier.toUpperCase()));
         File reportFile = null;
         if (xmlOutputFile != null) {
-            options.setXmlOutputFile(com.google.common.base.Optional.of(xmlOutputFile.getAbsolutePath()));
+            options.setXmlOutputFile(japicmp.util.Optional.of(xmlOutputFile.getAbsolutePath()));
             reportFile = xmlOutputFile;
         }
 
         if (htmlOutputFile != null) {
-            options.setHtmlOutputFile(com.google.common.base.Optional.of(htmlOutputFile.getAbsolutePath()));
+            options.setHtmlOutputFile(japicmp.util.Optional.of(htmlOutputFile.getAbsolutePath()));
             reportFile = htmlOutputFile;
         }
 
         if (xmlOutputFile != null || htmlOutputFile != null) {
-            XmlOutputGeneratorOptions xmlOptions = new XmlOutputGeneratorOptions();
-            XmlOutputGenerator xmlOutputGenerator = new XmlOutputGenerator(jApiClasses, options, xmlOptions);
-            XmlOutput xmlOutput = xmlOutputGenerator.generate();
-            XmlOutputGenerator.writeToFiles(options, xmlOutput);
+            ClassLoader cl = Thread.currentThread().getContextClassLoader();
+            try {
+                Thread.currentThread().setContextClassLoader(XmlOutputGenerator.class.getClassLoader());
+                XmlOutputGeneratorOptions xmlOptions = new XmlOutputGeneratorOptions();
+                XmlOutputGenerator xmlOutputGenerator = new XmlOutputGenerator(jApiClasses, options, xmlOptions);
+                XmlOutput xmlOutput = xmlOutputGenerator.generate();
+                XmlOutputGenerator.writeToFiles(options, xmlOutput);
+            } finally {
+                Thread.currentThread().setContextClassLoader(cl);
+            }
         }
 
         if (txtOutputFile != null) {

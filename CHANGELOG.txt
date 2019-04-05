@@ -1,3 +1,7 @@
+0.2.8
+-----
+   * Upgrade to JApiCmp 0.13.1
+   * Fix compatibility with Java 9+ (Jaxb)
 0.2.7
 -----
    * Add support for filters

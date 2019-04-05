@@ -6,8 +6,11 @@ import me.champeau.gradle.japicmp.report.RichReport;
 import me.champeau.gradle.japicmp.report.RuleConfiguration;
 import org.gradle.api.Action;
 import org.gradle.api.DefaultTask;
+import org.gradle.api.JavaVersion;
+import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedDependency;
+import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.CompileClasspath;
@@ -83,6 +86,9 @@ public class JapicmpTask extends DefaultTask {
                         addClasspathFor(configuration.getRuleClass(), classpath);
                     }
                 }
+                if (JavaVersion.current().isJava9Compatible()) {
+                    classpath.addAll(resolveJaxb().getFiles());
+                }
                 workerConfiguration.setClasspath(classpath);
                 List<JApiCmpWorkerAction.Archive> baseline = JapicmpTask.this.oldArchives != null ? toArchives(JapicmpTask.this.oldArchives) : inferArchives(oldClasspath);
                 List<JApiCmpWorkerAction.Archive> current = JapicmpTask.this.newArchives != null ? toArchives(JapicmpTask.this.newArchives) : inferArchives(newClasspath);
@@ -124,6 +130,17 @@ public class JapicmpTask extends DefaultTask {
             }
         });
 
+    }
+
+    private Configuration resolveJaxb() {
+        Project project = getProject();
+        DependencyHandler dependencies = project.getDependencies();
+        return project.getConfigurations().detachedConfiguration(
+                dependencies.create("javax.xml.bind:jaxb-api:2.3.0"),
+                dependencies.create("com.sun.xml.bind:jaxb-core:2.3.0.1"),
+                dependencies.create("com.sun.xml.bind:jaxb-impl:2.3.0.1"),
+                dependencies.create("javax.activation:activation:1.1.1")
+        );
     }
 
     private void addClasspathFor(Class<?> clazz, Set<File> classpath) {

@@ -10,6 +10,10 @@ plugins {
     id 'me.champeau.gradle.japicmp'
 }
 
+repositories {
+    jcenter()
+}
+
 sourceSets {
     main2
 }

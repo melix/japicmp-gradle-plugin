@@ -7,6 +7,10 @@ sourceSets {
     main2
 }
 
+repositories {
+    jcenter()
+}
+
 task jarv2(type:Jar) {
     classifier = 'v2'
     from sourceSets.main2.output

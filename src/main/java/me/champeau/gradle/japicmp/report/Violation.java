@@ -15,7 +15,7 @@
  */
 package me.champeau.gradle.japicmp.report;
 
-import com.google.common.base.Optional;
+import japicmp.util.Optional;
 import japicmp.model.JApiAnnotation;
 import japicmp.model.JApiAnnotationElement;
 import japicmp.model.JApiClass;
