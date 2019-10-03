@@ -92,7 +92,7 @@ public class JapicmpTask extends DefaultTask {
                 workerConfiguration.setClasspath(classpath);
                 List<JApiCmpWorkerAction.Archive> baseline = JapicmpTask.this.oldArchives != null ? toArchives(JapicmpTask.this.oldArchives) : inferArchives(oldClasspath);
                 List<JApiCmpWorkerAction.Archive> current = JapicmpTask.this.newArchives != null ? toArchives(JapicmpTask.this.newArchives) : inferArchives(newClasspath);
-                workerConfiguration.setDisplayName("Comparing " + current + " with " + baseline);
+                workerConfiguration.setDisplayName("JApicmp check comparing " + current + " with " + baseline);
                 workerConfiguration.params(
                         // we use a single configuration object, instead of passing each parameter directly,
                         // because the worker API doesn't support "null" values
