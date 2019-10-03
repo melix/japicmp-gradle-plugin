@@ -73,6 +73,7 @@ html {
                                 li(role: 'presentation') { a(role: 'menuitem', tabindex: '-1', href: '#', 'Error') }
                                 li(role: 'presentation') { a(role: 'menuitem', tabindex: '-1', href: '#', 'Warning') }
                                 li(role: 'presentation') { a(role: 'menuitem', tabindex: '-1', href: '#', 'Info') }
+                                li(role: 'presentation') { a(role: 'menuitem', tabindex: '-1', href: '#', 'Accepted') }
                             }
                         }
 
