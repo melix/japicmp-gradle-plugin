@@ -147,7 +147,6 @@ public class RichReport implements Serializable {
     }
 
     @Input
-    @Optional
     public boolean isAddDefaultRules() {
         return addDefaultRules;
     }

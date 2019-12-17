@@ -332,7 +332,6 @@ public class JapicmpTask extends DefaultTask {
     }
 
     @Input
-    @Optional
     public boolean getOnlyModified() {
         return onlyModified;
     }
@@ -346,7 +345,6 @@ public class JapicmpTask extends DefaultTask {
     }
 
     @Input
-    @Optional
     public boolean getOnlyBinaryIncompatibleModified() {
         return onlyBinaryIncompatibleModified;
     }
@@ -360,7 +358,6 @@ public class JapicmpTask extends DefaultTask {
     }
 
     @Input
-    @Optional
     public boolean getFailOnSourceIncompatibility() {
         return failOnSourceIncompatibility;
     }
@@ -400,7 +397,6 @@ public class JapicmpTask extends DefaultTask {
     }
 
     @Input
-    @Optional
     public boolean getFailOnModification() {
         return failOnModification;
     }
@@ -414,7 +410,6 @@ public class JapicmpTask extends DefaultTask {
     }
 
     @Input
-    @Optional
     public boolean getIncludeSynthetic() {
         return includeSynthetic;
     }
@@ -465,7 +460,6 @@ public class JapicmpTask extends DefaultTask {
         this.newArchives = newArchives;
     }
 
-    @Optional
     @Input
     public boolean getIgnoreMissingClasses() {
         return ignoreMissingClasses;
