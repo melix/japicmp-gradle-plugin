@@ -97,8 +97,8 @@ public class JapicmpTask extends DefaultTask {
                         // we use a single configuration object, instead of passing each parameter directly,
                         // because the worker API doesn't support "null" values
                         new JapiCmpWorkerConfiguration(
-                                getIncludeSynthetic(),
-                                getIgnoreMissingClasses(),
+                                isIncludeSynthetic(),
+                                isIgnoreMissingClasses(),
                                 getPackageIncludes(),
                                 getPackageExcludes(),
                                 getClassIncludes(),
@@ -115,14 +115,14 @@ public class JapicmpTask extends DefaultTask {
                                 toArchives(getNewClasspath()),
                                 baseline,
                                 current,
-                                getOnlyModified(),
-                                getOnlyBinaryIncompatibleModified(),
-                                getFailOnSourceIncompatibility(),
+                                isOnlyModified(),
+                                isOnlyBinaryIncompatibleModified(),
+                                isFailOnSourceIncompatibility(),
                                 getAccessModifier(),
                                 getXmlOutputFile(),
                                 getHtmlOutputFile(),
                                 getTxtOutputFile(),
-                                getFailOnModification(),
+                                isFailOnModification(),
                                 getProject().getBuildDir(),
                                 richReport
                         )
@@ -332,10 +332,6 @@ public class JapicmpTask extends DefaultTask {
     }
 
     @Input
-    public boolean getOnlyModified() {
-        return onlyModified;
-    }
-
     public boolean isOnlyModified() {
         return onlyModified;
     }
@@ -345,10 +341,6 @@ public class JapicmpTask extends DefaultTask {
     }
 
     @Input
-    public boolean getOnlyBinaryIncompatibleModified() {
-        return onlyBinaryIncompatibleModified;
-    }
-
     public boolean isOnlyBinaryIncompatibleModified() {
         return onlyBinaryIncompatibleModified;
     }
@@ -358,7 +350,7 @@ public class JapicmpTask extends DefaultTask {
     }
 
     @Input
-    public boolean getFailOnSourceIncompatibility() {
+    public boolean isFailOnSourceIncompatibility() {
         return failOnSourceIncompatibility;
     }
 
@@ -397,10 +389,6 @@ public class JapicmpTask extends DefaultTask {
     }
 
     @Input
-    public boolean getFailOnModification() {
-        return failOnModification;
-    }
-
     public boolean isFailOnModification() {
         return failOnModification;
     }
@@ -410,10 +398,6 @@ public class JapicmpTask extends DefaultTask {
     }
 
     @Input
-    public boolean getIncludeSynthetic() {
-        return includeSynthetic;
-    }
-
     public boolean isIncludeSynthetic() {
         return includeSynthetic;
     }
@@ -461,10 +445,6 @@ public class JapicmpTask extends DefaultTask {
     }
 
     @Input
-    public boolean getIgnoreMissingClasses() {
-        return ignoreMissingClasses;
-    }
-
     public boolean isIgnoreMissingClasses() {
         return ignoreMissingClasses;
     }
