@@ -1,5 +1,6 @@
 // configuration of the Maven artifacts
 apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
 // add javadoc/source jar tasks as artifacts
 artifacts {
@@ -26,3 +27,23 @@ pluginBundle {
     }
 
 }
+
+publishing {
+    repositories {
+        maven {
+            name 'test'
+            url "${buildDir}/repo"
+        }
+    }
+}
+
+signing {
+    useGpgCmd()
+}
+
+publishing.publications.all { pub ->
+    signing {
+        sign pub
+    }
+}
+

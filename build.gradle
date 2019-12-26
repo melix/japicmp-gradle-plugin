@@ -19,8 +19,8 @@ apply from: 'gradle/compile.gradle'
 apply from: 'gradle/publishing.gradle'
 
 dependencies {
-    compile localGroovy()
-    compile gradleApi()
+    implementation localGroovy()
+    implementation gradleApi()
 }
 
 // make sure we have proper input/output annotations before publishing

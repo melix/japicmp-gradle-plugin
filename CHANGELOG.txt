@@ -1,6 +1,7 @@
 0.2.9
 -----
    * Upgrade to JApiCmp 0.14.0
+   * Fixes deprecation warnings with Gradle 6
 0.2.8
 -----
    * Upgrade to JApiCmp 0.13.1
