@@ -311,7 +311,8 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                     .append(" and ")
                     .append(prettyPrint(baseline));
             if (reportLink != null) {
-                message.append(". See failure report at ").append(reportLink);
+                message.append(".").append(System.lineSeparator()).append(System.lineSeparator());
+                message.append("See failure report at ").append(reportLink);
             }
             throw new GradleException(message.toString());
         }
