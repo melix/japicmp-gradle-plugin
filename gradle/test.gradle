@@ -1,0 +1,34 @@
+import org.gradle.util.GradleVersion
+
+def wrapperVersion = GradleVersion.current().version
+def testedGradleVersions = (['4.0', '4.10.3', '5.6.4', '6.9.1', '7.2'] - wrapperVersion) as SortedSet
+
+def test = tasks.named("test")
+def check = tasks.named("check")
+
+test.configure {
+    description = "Runs the tests against Gradle $wrapperVersion"
+    systemProperty "gradleVersion", wrapperVersion
+}
+
+def testAllGradleVersions = tasks.register("testAllGradleVersions") {
+    group = "verification"
+    description = "Runs the tests against all supported Gradle versions"
+    dependsOn(test)
+}
+
+check.configure {
+    dependsOn(testAllGradleVersions)
+}
+
+testedGradleVersions.each { gradleVersion ->
+    def task = tasks.register("testGradle${gradleVersion.replace(".", "_").replace("-", "_")}", Test) {
+        group = "verification"
+        description = "Runs the tests against Gradle $gradleVersion"
+        classpath = test.get().classpath
+        systemProperty "gradleVersion", gradleVersion
+    }
+    testAllGradleVersions.configure {
+        dependsOn(task)
+    }
+}
