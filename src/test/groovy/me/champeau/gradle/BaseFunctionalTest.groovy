@@ -77,6 +77,7 @@ abstract class BaseFunctionalTest extends Specification {
 
     BuildResult run(String... tasks) {
         GradleRunner.create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(testProjectDir.root)
                 .withArguments('-s', *(tasks as List))
                 .withPluginClasspath()
@@ -85,9 +86,14 @@ abstract class BaseFunctionalTest extends Specification {
 
     BuildResult fails(String... tasks) {
         GradleRunner.create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(testProjectDir.root)
                 .withArguments('-s', *(tasks as List))
                 .withPluginClasspath()
                 .buildAndFail()
+    }
+
+    String getGradleVersion() {
+        System.getProperty("gradleVersion")
     }
 }
