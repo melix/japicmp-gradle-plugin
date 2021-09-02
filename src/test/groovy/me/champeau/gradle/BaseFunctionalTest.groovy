@@ -2,6 +2,7 @@ package me.champeau.gradle
 
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
+import org.gradle.util.GradleVersion
 import org.junit.Rule
 import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
@@ -79,7 +80,7 @@ abstract class BaseFunctionalTest extends Specification {
         GradleRunner.create()
                 .withGradleVersion(gradleVersion)
                 .withProjectDir(testProjectDir.root)
-                .withArguments('-s', *(tasks as List))
+                .withArguments(*(extraArguments + (tasks as List)))
                 .withPluginClasspath()
                 .build()
     }
@@ -88,12 +89,21 @@ abstract class BaseFunctionalTest extends Specification {
         GradleRunner.create()
                 .withGradleVersion(gradleVersion)
                 .withProjectDir(testProjectDir.root)
-                .withArguments('-s', *(tasks as List))
+                .withArguments(*(extraArguments + (tasks as List)))
                 .withPluginClasspath()
                 .buildAndFail()
     }
 
-    String getGradleVersion() {
+    private String getGradleVersion() {
         System.getProperty("gradleVersion")
+    }
+
+    private List<String> getExtraArguments() {
+        def extraArgs = ['-s']
+        def version = GradleVersion.version(gradleVersion)
+        if(version >= GradleVersion.version('7.2')) {
+            extraArgs << '--configuration-cache'
+        }
+        return extraArgs
     }
 }
