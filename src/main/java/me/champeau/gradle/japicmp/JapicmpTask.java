@@ -22,6 +22,7 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.workers.IsolationMode;
 import org.gradle.workers.WorkerConfiguration;
 import org.gradle.workers.WorkerExecutor;
+import org.gradle.util.GradleVersion;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -89,6 +90,9 @@ public class JapicmpTask extends DefaultTask {
                 if (JavaVersion.current().isJava9Compatible()) {
                     classpath.addAll(resolveJaxb().getFiles());
                 }
+                if (GradleVersion.current().compareTo(GradleVersion.version("6.0")) >= 0) {
+                    classpath.addAll(resolveGuava().getFiles());
+                }
                 workerConfiguration.setClasspath(classpath);
                 List<JApiCmpWorkerAction.Archive> baseline = JapicmpTask.this.oldArchives != null ? toArchives(JapicmpTask.this.oldArchives) : inferArchives(oldClasspath);
                 List<JApiCmpWorkerAction.Archive> current = JapicmpTask.this.newArchives != null ? toArchives(JapicmpTask.this.newArchives) : inferArchives(newClasspath);
@@ -140,6 +144,14 @@ public class JapicmpTask extends DefaultTask {
                 dependencies.create("com.sun.xml.bind:jaxb-core:2.3.0.1"),
                 dependencies.create("com.sun.xml.bind:jaxb-impl:2.3.0.1"),
                 dependencies.create("javax.activation:activation:1.1.1")
+        );
+    }
+
+    private Configuration resolveGuava() {
+        Project project = getProject();
+        DependencyHandler dependencies = project.getDependencies();
+        return project.getConfigurations().detachedConfiguration(
+                dependencies.create("com.google.guava:guava:30.1.1-jre")
         );
     }
 
