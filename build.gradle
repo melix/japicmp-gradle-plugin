@@ -9,7 +9,7 @@ buildScan {
     termsOfServiceAgree = 'yes'
 }
 buildScanRecipes {
-    recipes 'git-status', 'travis-ci'
+    recipes 'git-status'
     recipe 'git-commit', baseUrl: 'https://github.com/melix/japicmp-gradle-plugin/tree'
 }
 
