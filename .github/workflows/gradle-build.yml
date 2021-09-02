@@ -1,4 +1,4 @@
-name: Gradle
+name: Gradle Build
 on: push
 jobs:
   gradle:
@@ -13,4 +13,4 @@ jobs:
         java-version: 8
     - uses: gradle/gradle-build-action@v1
       with:
-        arguments: build --scan
+        arguments: build --continue --scan
