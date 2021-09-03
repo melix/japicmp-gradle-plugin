@@ -21,7 +21,7 @@ This plugin requires Gradle 4+. Use the following snippet inside a Gradle build 
 ----
 buildscript {
     repositories {
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
