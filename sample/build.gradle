@@ -12,9 +12,7 @@ import java.util.zip.ZipInputStream
 
 buildscript {
     repositories {
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
+        gradlePluginPortal()
     }
     dependencies {
         classpath "me.champeau.gradle:japicmp-gradle-plugin:0.1.2"
@@ -103,7 +101,7 @@ repositories {
             artifact '/distributions/[module]-[revision]-bin(.[ext])'
         }
     }
-    jcenter()
+    mavenCentral()
 }
 
 dependencies {
