@@ -11,6 +11,7 @@ import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
 import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
+import org.gradle.api.file.ConfigurableFileCollection;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.CompileClasspath;
@@ -36,6 +37,7 @@ import java.util.Set;
 @CacheableTask
 public class JapicmpTask extends DefaultTask {
 
+    private final FileCollection additionalJapicmpClasspath;
     private List<String> packageIncludes = new ArrayList<>();
     private List<String> packageExcludes = new ArrayList<>();
     private List<String> classIncludes = new ArrayList<>();
@@ -64,6 +66,18 @@ public class JapicmpTask extends DefaultTask {
     private boolean ignoreMissingClasses = false;
     private RichReport richReport;
 
+    public JapicmpTask() {
+        getProject().getLayout();
+        ConfigurableFileCollection classpath = getProject().files();
+        if (JavaVersion.current().isJava9Compatible()) {
+            classpath.from(resolveJaxb());
+        }
+        if (GradleVersion.current().compareTo(GradleVersion.version("6.0")) >= 0) {
+            classpath.from(resolveGuava());
+        }
+        additionalJapicmpClasspath = classpath;
+    }
+
     @TaskAction
     public void exec() {
         WorkerExecutor workerExecutor = getServices().get(WorkerExecutor.class);
@@ -87,12 +101,7 @@ public class JapicmpTask extends DefaultTask {
                         addClasspathFor(configuration.getRuleClass(), classpath);
                     }
                 }
-                if (JavaVersion.current().isJava9Compatible()) {
-                    classpath.addAll(resolveJaxb().getFiles());
-                }
-                if (GradleVersion.current().compareTo(GradleVersion.version("6.0")) >= 0) {
-                    classpath.addAll(resolveGuava().getFiles());
-                }
+                classpath.addAll(additionalJapicmpClasspath.getFiles());
                 workerConfiguration.setClasspath(classpath);
                 List<JApiCmpWorkerAction.Archive> baseline = JapicmpTask.this.oldArchives != null ? toArchives(JapicmpTask.this.oldArchives) : inferArchives(oldClasspath);
                 List<JApiCmpWorkerAction.Archive> current = JapicmpTask.this.newArchives != null ? toArchives(JapicmpTask.this.newArchives) : inferArchives(newClasspath);
