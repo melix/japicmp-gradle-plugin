@@ -14,6 +14,12 @@ class AnnotationFilteringTest extends BaseFunctionalTest {
         hasTextReport('MODIFIED METHOD: PUBLIC void (<-int) stableMethod()')
         def report = getReport('japi', 'txt').text
         !report.contains('MODIFIED METHOD: PUBLIC void (<-int) betaMethod()')
+
+        when:
+        result = run 'japicmpOnlyCheckStableApi'
+
+        then:
+        result.task(":japicmpOnlyCheckStableApi").outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "excluding @BetaApi hides beta methods"() {
@@ -25,5 +31,11 @@ class AnnotationFilteringTest extends BaseFunctionalTest {
         hasTextReport('MODIFIED METHOD: PUBLIC void (<-int) stableMethod()')
         def report = getReport('japi', 'txt').text
         !report.contains('MODIFIED METHOD: PUBLIC void (<-int) betaMethod()')
+
+        when:
+        result = run 'japicmpExcludeBetaApi'
+
+        then:
+        result.task(":japicmpExcludeBetaApi").outcome == TaskOutcome.UP_TO_DATE
     }
 }

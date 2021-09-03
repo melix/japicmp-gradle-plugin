@@ -14,6 +14,12 @@ class PackageAndClassFilteringTest extends BaseFunctionalTest {
         hasTextReport('MODIFIED CLASS: PUBLIC me.champeau.gradle.japicmp.bad.Bad')
         def report = getReport('japi', 'txt').text
         !report.contains('me.champeau.gradle.japicmp.good.Good')
+
+        when:
+        result = run 'japicmpPackageIncludeOnlyBad'
+
+        then:
+        result.task(":japicmpPackageIncludeOnlyBad").outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "including only good package"() {
@@ -25,6 +31,12 @@ class PackageAndClassFilteringTest extends BaseFunctionalTest {
         hasTextReport('UNCHANGED CLASS: PUBLIC me.champeau.gradle.japicmp.good.Good')
         def report = getReport('japi', 'txt').text
         !report.contains('me.champeau.gradle.japicmp.bad.Bad')
+
+        when:
+        result = run 'japicmpPackageIncludeOnlyGood'
+
+        then:
+        result.task(":japicmpPackageIncludeOnlyGood").outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "excluding good package"() {
@@ -36,6 +48,12 @@ class PackageAndClassFilteringTest extends BaseFunctionalTest {
         hasTextReport('MODIFIED CLASS: PUBLIC me.champeau.gradle.japicmp.bad.Bad')
         def report = getReport('japi', 'txt').text
         !report.contains('me.champeau.gradle.japicmp.good.Good')
+
+        when:
+        result = run 'japiCmpPackageExcludeKeepBad'
+
+        then:
+        result.task(":japiCmpPackageExcludeKeepBad").outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "excluding bad package"() {
@@ -47,6 +65,12 @@ class PackageAndClassFilteringTest extends BaseFunctionalTest {
         hasTextReport('UNCHANGED CLASS: PUBLIC me.champeau.gradle.japicmp.good.Good')
         def report = getReport('japi', 'txt').text
         !report.contains('me.champeau.gradle.japicmp.bad.Bad')
+
+        when:
+        result = run 'japicmpPackageExcludeKeepGood'
+
+        then:
+        result.task(":japicmpPackageExcludeKeepGood").outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "including only bad class"() {
@@ -58,6 +82,12 @@ class PackageAndClassFilteringTest extends BaseFunctionalTest {
         hasTextReport('MODIFIED CLASS: PUBLIC me.champeau.gradle.japicmp.bad.Bad')
         def report = getReport('japi', 'txt').text
         !report.contains('me.champeau.gradle.japicmp.good.Good')
+
+        when:
+        result = run 'japicmpClassIncludeOnlyBad'
+
+        then:
+        result.task(":japicmpClassIncludeOnlyBad").outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "including only good class"() {
@@ -69,6 +99,12 @@ class PackageAndClassFilteringTest extends BaseFunctionalTest {
         hasTextReport('UNCHANGED CLASS: PUBLIC me.champeau.gradle.japicmp.good.Good')
         def report = getReport('japi', 'txt').text
         !report.contains('me.champeau.gradle.japicmp.bad.Bad')
+
+        when:
+        result = run 'japicmpClassIncludeOnlyGood'
+
+        then:
+        result.task(":japicmpClassIncludeOnlyGood").outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "excluding good class"() {
@@ -80,6 +116,12 @@ class PackageAndClassFilteringTest extends BaseFunctionalTest {
         hasTextReport('MODIFIED CLASS: PUBLIC me.champeau.gradle.japicmp.bad.Bad')
         def report = getReport('japi', 'txt').text
         !report.contains('me.champeau.gradle.japicmp.good.Good')
+
+        when:
+        result = run 'japiCmpClassExcludeKeepBad'
+
+        then:
+        result.task(":japiCmpClassExcludeKeepBad").outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "excluding bad class"() {
@@ -91,5 +133,11 @@ class PackageAndClassFilteringTest extends BaseFunctionalTest {
         hasTextReport('UNCHANGED CLASS: PUBLIC me.champeau.gradle.japicmp.good.Good')
         def report = getReport('japi', 'txt').text
         !report.contains('me.champeau.gradle.japicmp.bad.Bad')
+
+        when:
+        result = run 'japicmpClassExcludeKeepGood'
+
+        then:
+        result.task(":japicmpClassExcludeKeepGood").outcome == TaskOutcome.UP_TO_DATE
     }
 }

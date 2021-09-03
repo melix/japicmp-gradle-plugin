@@ -21,6 +21,13 @@ class CustomFilteringTest extends BaseFunctionalTest {
         hasTextReport('REMOVED METHOD: PUBLIC(-) void someMethod()')
 
         when:
+        result = run 'japicmpAddCustomMatchTriggers'
+
+        then:
+        println(result.output)
+        result.task(":japicmpAddCustomMatchTriggers").outcome == TaskOutcome.UP_TO_DATE
+
+        when:
         result = run 'japicmpRemoveCustomMatchTriggers'
 
         then:
@@ -28,5 +35,12 @@ class CustomFilteringTest extends BaseFunctionalTest {
         result.task(":japicmpRemoveCustomMatchTriggers").outcome == TaskOutcome.SUCCESS
         hasTextReport('NEW FIELD: PUBLIC(+) java.lang.String someField')
         hasTextReport('NEW METHOD: PUBLIC(+) void someMethod()')
+
+        when:
+        result = run 'japicmpRemoveCustomMatchTriggers'
+
+        then:
+        println(result.output)
+        result.task(":japicmpRemoveCustomMatchTriggers").outcome == TaskOutcome.UP_TO_DATE
     }
 }
