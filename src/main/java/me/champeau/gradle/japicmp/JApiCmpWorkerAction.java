@@ -93,8 +93,8 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                 configuration.htmlOutputFile,
                 configuration.txtOutputFile,
                 configuration.failOnModification,
-                configuration.buildDir,
-                configuration.richReport);
+                configuration.richReport,
+                configuration.richReportFallbackDestinationDir);
     }
 
     private JarArchiveComparatorOptions createOptions() {
@@ -287,7 +287,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             }
             File path = richReport.getDestinationDir();
             if (path == null) {
-                path = new File(buildDir, "reports");
+                path = richReportFallbackDestinationDir;
             }
 
             try {

@@ -49,8 +49,8 @@ public class JapiCmpWorkerConfiguration implements Serializable {
     protected final File htmlOutputFile;
     protected final File txtOutputFile;
     protected final boolean failOnModification;
-    protected final File buildDir;
     protected final RichReport richReport;
+    protected final File richReportFallbackDestinationDir;
 
     public JapiCmpWorkerConfiguration(final boolean includeSynthetic,
                                       final boolean ignoreMissingClasses,
@@ -78,8 +78,8 @@ public class JapiCmpWorkerConfiguration implements Serializable {
                                       final File htmlOutputFile,
                                       final File txtOutputFile,
                                       final boolean failOnModification,
-                                      final File buildDir,
-                                      final RichReport richReport) {
+                                      final RichReport richReport,
+                                      final File richReportFallbackDestinationDir) {
         this.includeSynthetic = includeSynthetic;
         this.ignoreMissingClasses = ignoreMissingClasses;
         this.packageIncludes = packageIncludes;
@@ -106,8 +106,8 @@ public class JapiCmpWorkerConfiguration implements Serializable {
         this.htmlOutputFile = htmlOutputFile;
         this.txtOutputFile = txtOutputFile;
         this.failOnModification = failOnModification | failOnSourceIncompatibility;
-        this.buildDir = buildDir;
         this.richReport = richReport;
+        this.richReportFallbackDestinationDir = richReportFallbackDestinationDir;
     }
 
 }

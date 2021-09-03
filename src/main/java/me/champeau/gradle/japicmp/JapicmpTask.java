@@ -65,9 +65,9 @@ public class JapicmpTask extends DefaultTask {
     private FileCollection newArchives;
     private boolean ignoreMissingClasses = false;
     private RichReport richReport;
+    private final File richReportFallbackDestinationDir;
 
     public JapicmpTask() {
-        getProject().getLayout();
         ConfigurableFileCollection classpath = getProject().files();
         if (JavaVersion.current().isJava9Compatible()) {
             classpath.from(resolveJaxb());
@@ -76,6 +76,7 @@ public class JapicmpTask extends DefaultTask {
             classpath.from(resolveGuava());
         }
         additionalJapicmpClasspath = classpath;
+        richReportFallbackDestinationDir = new File(getProject().getBuildDir(), "reports");
     }
 
     @TaskAction
@@ -136,8 +137,8 @@ public class JapicmpTask extends DefaultTask {
                                 getHtmlOutputFile(),
                                 getTxtOutputFile(),
                                 isFailOnModification(),
-                                getProject().getBuildDir(),
-                                richReport
+                                richReport,
+                                richReportFallbackDestinationDir
                         )
                 );
             }
