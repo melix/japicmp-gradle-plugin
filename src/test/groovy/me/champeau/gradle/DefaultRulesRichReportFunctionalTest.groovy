@@ -15,6 +15,12 @@ class DefaultRulesRichReportFunctionalTest extends BaseFunctionalTest {
         report =~ '<a class=\'navbar-brand\' href=\'#\'>Binary compatibility report</a>'
         report =~ 'Class org.apache.commons.lang3.time.FastDateFormat: Is not binary compatible'
         report =~ 'Class org.apache.commons.lang3.CharSetUtils: has been modified in source compatible way'
+
+        when:
+        result = fails "japicmp"
+
+        then:
+        result.task(":japicmp").outcome == TaskOutcome.FAILED
     }
 
 }

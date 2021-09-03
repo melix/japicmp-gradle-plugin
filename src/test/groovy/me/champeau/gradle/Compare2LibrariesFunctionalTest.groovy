@@ -14,5 +14,11 @@ class Compare2LibrariesFunctionalTest extends BaseFunctionalTest {
         hasTextReport('UNCHANGED CLASS: PUBLIC org.apache.commons.lang3.AnnotationUtils')
         noHtmlReport()
         noRichReport()
+
+        when:
+        result = run 'japicmp'
+
+        then:
+        result.task(":japicmp").outcome == TaskOutcome.UP_TO_DATE
     }
 }

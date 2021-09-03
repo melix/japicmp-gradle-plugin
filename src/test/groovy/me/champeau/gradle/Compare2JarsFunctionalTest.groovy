@@ -14,6 +14,12 @@ class Compare2JarsFunctionalTest extends BaseFunctionalTest {
         hasTextReport('UNCHANGED CLASS: PUBLIC org.apache.commons.lang3.AnnotationUtils')
         noHtmlReport()
         noRichReport()
+
+        when:
+        result = run 'japicmp'
+
+        then:
+        result.task(":japicmp").outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "can compare 2 jars using explicit archives property"() {
@@ -25,5 +31,11 @@ class Compare2JarsFunctionalTest extends BaseFunctionalTest {
         hasTextReport('UNCHANGED CLASS: PUBLIC org.apache.commons.lang3.AnnotationUtils')
         noHtmlReport()
         noRichReport()
+
+        when:
+        result = run 'japicmpWithExplicitClasspath'
+
+        then:
+        result.task(":japicmpWithExplicitClasspath").outcome == TaskOutcome.UP_TO_DATE
     }
 }

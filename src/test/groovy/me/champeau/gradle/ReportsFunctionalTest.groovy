@@ -14,6 +14,12 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         hasHtmlReport('<a href="#org.apache.commons.lang3.event.EventListenerSupport">')
         noTxtReport()
         noRichReport()
+
+        when:
+        result = run 'japicmp'
+
+        then:
+        result.task(":japicmp").outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "can generate rich report"() {
@@ -26,5 +32,11 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         hasRichReport('A test of rich report')
         noTxtReport()
         noHtmlReport()
+
+        when:
+        result = run 'japicmpRich'
+
+        then:
+        result.task(":japicmpRich").outcome == TaskOutcome.UP_TO_DATE
     }
 }

@@ -11,6 +11,12 @@ class SourceIncompatibleChangeTest extends BaseFunctionalTest {
 
         then:
         result.task(":japicmpIgnoresSourceCompatabilityByDefault").outcome == TaskOutcome.SUCCESS
+
+        when:
+        result = run 'japicmpIgnoresSourceCompatabilityByDefault'
+
+        then:
+        result.task(":japicmpIgnoresSourceCompatabilityByDefault").outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "source incompatibility breaks build"() {
@@ -19,11 +25,23 @@ class SourceIncompatibleChangeTest extends BaseFunctionalTest {
 
         then:
         result.task(":japicmpFailsOnSourceIncompatability").outcome == TaskOutcome.FAILED
+
+        when:
+        result = fails 'japicmpFailsOnSourceIncompatability'
+
+        then:
+        result.task(":japicmpFailsOnSourceIncompatability").outcome == TaskOutcome.FAILED
     }
 
     def "source incompatibility breaks build (non-public access)"() {
         when:
         def result = fails "japicmpFailsOnSourceIncompatabilityNonPublic"
+
+        then:
+        result.task(":japicmpFailsOnSourceIncompatabilityNonPublic").outcome == TaskOutcome.FAILED
+
+        when:
+        result = fails 'japicmpFailsOnSourceIncompatabilityNonPublic'
 
         then:
         result.task(":japicmpFailsOnSourceIncompatabilityNonPublic").outcome == TaskOutcome.FAILED
