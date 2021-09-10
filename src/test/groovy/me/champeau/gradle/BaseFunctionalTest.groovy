@@ -98,11 +98,15 @@ abstract class BaseFunctionalTest extends Specification {
         System.getProperty("gradleVersion")
     }
 
+    protected boolean supportsConfigurationCache = true
+
     private List<String> getExtraArguments() {
-        def extraArgs = ['-s']
+        def extraArgs = ['--stacktrace']
         def version = GradleVersion.version(gradleVersion)
-        if(version >= GradleVersion.version('7.2')) {
-            extraArgs << '--configuration-cache'
+        if (version >= GradleVersion.version('7.2')) {
+            if (supportsConfigurationCache) {
+                extraArgs << '--configuration-cache'
+            }
         }
         return extraArgs
     }
