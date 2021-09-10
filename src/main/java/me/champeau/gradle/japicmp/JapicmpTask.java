@@ -20,10 +20,11 @@ import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.util.GradleVersion;
 import org.gradle.workers.IsolationMode;
+import org.gradle.workers.ProcessWorkerSpec;
 import org.gradle.workers.WorkerConfiguration;
 import org.gradle.workers.WorkerExecutor;
-import org.gradle.util.GradleVersion;
 
 import java.io.File;
 import java.net.URISyntaxException;
@@ -81,69 +82,105 @@ public class JapicmpTask extends DefaultTask {
 
     @TaskAction
     public void exec() {
-        WorkerExecutor workerExecutor = getServices().get(WorkerExecutor.class);
-        workerExecutor.submit(JApiCmpWorkerAction.class, new Action<WorkerConfiguration>() {
+        List<JApiCmpWorkerAction.Archive> baseline = oldArchives != null ? toArchives(oldArchives) : inferArchives(oldClasspath);
+        List<JApiCmpWorkerAction.Archive> current = newArchives != null ? toArchives(newArchives) : inferArchives(newClasspath);
+        if (currentGradleGreaterOrEqualTo("5.6")) {
+            execForNewGradle(baseline, current);
+        } else {
+            execForOldGradle(baseline, current);
+        }
+    }
+
+    private boolean currentGradleGreaterOrEqualTo(String version) {
+        return GradleVersion.current().compareTo(GradleVersion.version(version)) >= 0;
+    }
+
+    private void execForNewGradle(final List<JApiCmpWorkerAction.Archive> baseline, final List<JApiCmpWorkerAction.Archive> current) {
+        getWorkerExecutor().processIsolation(new Action<ProcessWorkerSpec>() {
+            @Override
+            public void execute(ProcessWorkerSpec spec) {
+                spec.getClasspath().from(calculateWorkerClasspath());
+            }
+        }).submit(JApiCmpWorkAction.class, new Action<JapiCmpWorkParameters>() {
+            @Override
+            public void execute(JapiCmpWorkParameters params) {
+                params.getConfiguration().set(calculateWorkerConfiguration(baseline, current));
+            }
+        });
+    }
+
+    private void execForOldGradle(final List<JApiCmpWorkerAction.Archive> baseline, final List<JApiCmpWorkerAction.Archive> current) {
+        getWorkerExecutor().submit(JApiCmpWorkerAction.class, new Action<WorkerConfiguration>() {
             @Override
             public void execute(final WorkerConfiguration workerConfiguration) {
                 workerConfiguration.setIsolationMode(IsolationMode.PROCESS);
-                Set<File> classpath = new HashSet<>();
-                if (includeFilters != null) {
-                    for (FilterConfiguration configuration : includeFilters) {
-                        addClasspathFor(configuration.getFilterClass(), classpath);
-                    }
-                }
-                if (excludeFilters != null) {
-                    for (FilterConfiguration configuration : excludeFilters) {
-                        addClasspathFor(configuration.getFilterClass(), classpath);
-                    }
-                }
-                if (richReport != null) {
-                    for (RuleConfiguration configuration : richReport.getRules()) {
-                        addClasspathFor(configuration.getRuleClass(), classpath);
-                    }
-                }
-                classpath.addAll(additionalJapicmpClasspath.getFiles());
-                workerConfiguration.setClasspath(classpath);
-                List<JApiCmpWorkerAction.Archive> baseline = JapicmpTask.this.oldArchives != null ? toArchives(JapicmpTask.this.oldArchives) : inferArchives(oldClasspath);
-                List<JApiCmpWorkerAction.Archive> current = JapicmpTask.this.newArchives != null ? toArchives(JapicmpTask.this.newArchives) : inferArchives(newClasspath);
+                workerConfiguration.setClasspath(calculateWorkerClasspath());
                 workerConfiguration.setDisplayName("JApicmp check comparing " + current + " with " + baseline);
                 workerConfiguration.params(
                         // we use a single configuration object, instead of passing each parameter directly,
                         // because the worker API doesn't support "null" values
-                        new JapiCmpWorkerConfiguration(
-                                isIncludeSynthetic(),
-                                isIgnoreMissingClasses(),
-                                getPackageIncludes(),
-                                getPackageExcludes(),
-                                getClassIncludes(),
-                                getClassExcludes(),
-                                getMethodIncludes(),
-                                getMethodExcludes(),
-                                getFieldIncludes(),
-                                getFieldExcludes(),
-                                getAnnotationIncludes(),
-                                getAnnotationExcludes(),
-                                getIncludeFilters(),
-                                getExcludeFilters(),
-                                toArchives(getOldClasspath()),
-                                toArchives(getNewClasspath()),
-                                baseline,
-                                current,
-                                isOnlyModified(),
-                                isOnlyBinaryIncompatibleModified(),
-                                isFailOnSourceIncompatibility(),
-                                getAccessModifier(),
-                                getXmlOutputFile(),
-                                getHtmlOutputFile(),
-                                getTxtOutputFile(),
-                                isFailOnModification(),
-                                richReport,
-                                richReportFallbackDestinationDir
-                        )
+                        calculateWorkerConfiguration(baseline, current)
                 );
             }
         });
+    }
 
+    private WorkerExecutor getWorkerExecutor() {
+        return getServices().get(WorkerExecutor.class);
+    }
+
+    private Set<File> calculateWorkerClasspath() {
+        Set<File> classpath = new HashSet<>();
+        if (includeFilters != null) {
+            for (FilterConfiguration configuration : includeFilters) {
+                addClasspathFor(configuration.getFilterClass(), classpath);
+            }
+        }
+        if (excludeFilters != null) {
+            for (FilterConfiguration configuration : excludeFilters) {
+                addClasspathFor(configuration.getFilterClass(), classpath);
+            }
+        }
+        if (richReport != null) {
+            for (RuleConfiguration configuration : richReport.getRules()) {
+                addClasspathFor(configuration.getRuleClass(), classpath);
+            }
+        }
+        classpath.addAll(additionalJapicmpClasspath.getFiles());
+        return classpath;
+    }
+
+    private JapiCmpWorkerConfiguration calculateWorkerConfiguration(List<JApiCmpWorkerAction.Archive> baseline, List<JApiCmpWorkerAction.Archive> current) {
+        return new JapiCmpWorkerConfiguration(
+                isIncludeSynthetic(),
+                isIgnoreMissingClasses(),
+                getPackageIncludes(),
+                getPackageExcludes(),
+                getClassIncludes(),
+                getClassExcludes(),
+                getMethodIncludes(),
+                getMethodExcludes(),
+                getFieldIncludes(),
+                getFieldExcludes(),
+                getAnnotationIncludes(),
+                getAnnotationExcludes(),
+                getIncludeFilters(),
+                getExcludeFilters(),
+                toArchives(getOldClasspath()),
+                toArchives(getNewClasspath()),
+                baseline,
+                current,
+                isOnlyModified(),
+                isOnlyBinaryIncompatibleModified(),
+                isFailOnSourceIncompatibility(),
+                getAccessModifier(),
+                getXmlOutputFile(),
+                getHtmlOutputFile(),
+                getTxtOutputFile(),
+                isFailOnModification(),
+                richReport,
+                richReportFallbackDestinationDir
+        );
     }
 
     private Configuration resolveJaxb() {
