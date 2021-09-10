@@ -103,6 +103,9 @@ abstract class BaseFunctionalTest extends Specification {
     private List<String> getExtraArguments() {
         def extraArgs = ['--stacktrace']
         def version = GradleVersion.version(gradleVersion)
+        if (version >= GradleVersion.version("6.0")) {
+            extraArgs << '--warning-mode=fail'
+        }
         if (version >= GradleVersion.version('7.2')) {
             if (supportsConfigurationCache) {
                 extraArgs << '--configuration-cache'
