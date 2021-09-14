@@ -22,15 +22,15 @@ repositories {
 }
 
 dependencies {
-    compile('com.github.siom79.japicmp:japicmp:0.14.3') {
+    api('com.github.siom79.japicmp:japicmp:0.14.3') {
         exclude group:'com.google.guava'
         exclude group:'io.airlift'
         exclude group:'javax.xml.bind'
         exclude group:'com.sun.xml.bind'
     }
 
-    testCompile gradleTestKit()
-    testCompile('org.spockframework:spock-core:1.1-groovy-2.4') {
+    testImplementation gradleTestKit()
+    testImplementation('org.spockframework:spock-core:1.1-groovy-2.4') {
         exclude group:'org.codehaus.groovy'
     }
 }
