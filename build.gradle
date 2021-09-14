@@ -1,13 +1,8 @@
 plugins {
-    id 'com.gradle.build-scan' version '2.0.2'
     id 'me.champeau.buildscan-recipes' version '0.2.0'
     id 'com.gradle.plugin-publish' version '0.10.1'
 }
 
-buildScan {
-    termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-    termsOfServiceAgree = 'yes'
-}
 buildScanRecipes {
     recipes 'git-status'
     recipe 'git-commit', baseUrl: 'https://github.com/melix/japicmp-gradle-plugin/tree'
