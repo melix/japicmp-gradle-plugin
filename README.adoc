@@ -4,7 +4,7 @@
 :gradle-url: http://gradle.org/
 :plugin-version: 0.2.8
 
-image:http://img.shields.io/travis/melix/japicmp-gradle-plugin/master.svg["Build Status (travis)", link="https://travis-ci.org/melix/japicmp-gradle-plugin"]
+image:https://github.com/melix/japicmp-gradle-plugin/actions/workflows/gradle-build.yml/badge.svg["Build Status", link="https://github.com/melix/japicmp-gradle-plugin/actions/workflows/gradle-build.yml"]
 image:http://img.shields.io/badge/license-ASF2-blue.svg["Apache License 2", link="http://www.apache.org/licenses/LICENSE-2.0.txt"]
 
 The japicmp-gradle-plugin provides binary compatibility reporting through {japicmp-url}[JApicmp] using {gradle-url}[Gradle].
