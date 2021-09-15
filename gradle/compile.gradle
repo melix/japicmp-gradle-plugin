@@ -1,8 +1,9 @@
 apply plugin: 'groovy'
 apply plugin: 'java-gradle-plugin'
 
-sourceCompatibility=1.7
-targetCompatibility=1.7
+
+sourceCompatibility=8
+targetCompatibility=8
 
 compileGroovy.options.encoding = 'UTF-8'
 
