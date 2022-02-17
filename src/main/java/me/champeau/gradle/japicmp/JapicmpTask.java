@@ -9,6 +9,7 @@ import org.gradle.api.DefaultTask;
 import org.gradle.api.JavaVersion;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
+import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.ConfigurableFileCollection;
@@ -238,7 +239,10 @@ public class JapicmpTask extends DefaultTask {
 
     private void collectArchives(final List<JApiCmpWorkerAction.Archive> archives, ResolvedDependency resolvedDependency) {
         String version = resolvedDependency.getModule().getId().getVersion();
-        archives.add(new JApiCmpWorkerAction.Archive(resolvedDependency.getAllModuleArtifacts().iterator().next().getFile(), version));
+        Set<ResolvedArtifact> allModuleArtifacts = resolvedDependency.getAllModuleArtifacts();
+        if (!allModuleArtifacts.isEmpty()) {
+            archives.add(new JApiCmpWorkerAction.Archive(allModuleArtifacts.iterator().next().getFile(), version));
+        }
         for (ResolvedDependency dependency : resolvedDependency.getChildren()) {
             collectArchives(archives, dependency);
         }

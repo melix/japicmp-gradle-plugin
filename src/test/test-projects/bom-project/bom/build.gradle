@@ -1,0 +1,14 @@
+plugins {
+    id 'me.champeau.gradle.japicmp'
+    id 'java-platform'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    constraints {
+        api project(":simple")
+    }
+}
