@@ -1,7 +1,0 @@
-plugins {
-    id 'me.champeau.gradle.japicmp'
-}
-
-repositories {
-    mavenCentral()
-}

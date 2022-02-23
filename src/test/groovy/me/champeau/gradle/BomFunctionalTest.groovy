@@ -11,7 +11,7 @@ class BomFunctionalTest extends BaseFunctionalTest {
 
         then:
         result.task(":japicmp").outcome == TaskOutcome.SUCCESS
-        hasTextReport('UNCHANGED CLASS: PUBLIC org.apache.commons.lang3.AnnotationUtils')
+        hasTextReport('CLASS FILE FORMAT VERSION: 50.0 <- 50.0')
         noHtmlReport()
         noRichReport()
 
