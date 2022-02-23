@@ -3,7 +3,7 @@ import org.gradle.util.GradleVersion
 def wrapperVersion = GradleVersion.current().version
 
 // The plugin is broken with Gradle 5.6.*
-def otherVersions = ['4.0', '4.10.3', /*'5.6.4',*/ '6.9.1', '7.2']
+def otherVersions = ['4.0', '4.10.3', /*'5.6.4',*/ '6.9.1', '7.2', '7.3', '7.4']
 
 def testedGradleVersions = (otherVersions - wrapperVersion) as SortedSet
 
