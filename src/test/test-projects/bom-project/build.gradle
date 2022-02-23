@@ -1,0 +1,24 @@
+plugins {
+    id 'me.champeau.gradle.japicmp'
+}
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    baseline
+    current
+}
+
+dependencies {
+    baseline 'com.squareup.okio:okio:2.9.0'
+    current 'com.squareup.okio:okio:3.0.0'
+    current platform('com.squareup.okio:okio-bom:3.0.0')
+}
+
+task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath = configurations.baseline
+    newClasspath = configurations.current
+    txtOutputFile = file("$buildDir/reports/japi.txt")
+}

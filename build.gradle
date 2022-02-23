@@ -1,6 +1,6 @@
 plugins {
     id 'me.champeau.buildscan-recipes' version '0.2.0'
-    id 'com.gradle.plugin-publish' version '0.16.0'
+    id 'com.gradle.plugin-publish' version '0.20.0'
 }
 
 buildScanRecipes {
@@ -15,8 +15,8 @@ apply from: 'gradle/test.gradle'
 apply from: 'gradle/publishing.gradle'
 
 dependencies {
-    implementation localGroovy()
-    implementation gradleApi()
+    compileOnly localGroovy()
+    compileOnly gradleApi()
 }
 
 // make sure we have proper input/output annotations before publishing
