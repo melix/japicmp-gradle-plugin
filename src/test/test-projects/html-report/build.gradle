@@ -17,17 +17,16 @@ dependencies {
 }
 
 task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    oldClasspath = configurations.baseline
-    newClasspath = configurations.current
+    oldClasspath.from(configurations.baseline)
+    newClasspath.from(configurations.current)
     htmlOutputFile = file("$buildDir/reports/japi.html")
 }
 
 task japicmpRich(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    oldClasspath = configurations.baseline
-    newClasspath = configurations.current
+    oldClasspath.from(configurations.baseline)
+    newClasspath.from(configurations.current)
     richReport {
         reportName = 'rich.html'
         description = 'A test of rich report'
     }
 }
-

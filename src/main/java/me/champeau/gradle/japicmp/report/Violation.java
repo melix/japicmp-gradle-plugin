@@ -219,4 +219,12 @@ public class Violation {
         }
         return change.toString();
     }
+
+    public Violation withSeverity(Severity severity) {
+        return new Violation(
+                member,
+                severity,
+                humanExplanation
+        );
+    }
 }

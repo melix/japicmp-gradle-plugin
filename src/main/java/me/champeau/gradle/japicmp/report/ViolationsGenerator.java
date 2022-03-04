@@ -30,6 +30,7 @@ import me.champeau.gradle.japicmp.report.stdrules.RecordSeenMembersSetup;
 import me.champeau.gradle.japicmp.report.stdrules.SourceCompatibleRule;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,8 +53,8 @@ public class ViolationsGenerator {
     }
 
     private static List<Pattern> toPatterns(List<String> regexps) {
-        if (regexps == null) {
-            return null;
+        if (regexps == null || regexps.isEmpty()) {
+            return Collections.emptyList();
         }
         List<Pattern> patterns = new ArrayList<>(regexps.size());
         for (String regexp : regexps) {
@@ -156,9 +157,9 @@ public class ViolationsGenerator {
 
     private void maybeProcess(JApiClass clazz, Context context) {
         String fullyQualifiedName = clazz.getFullyQualifiedName();
-        if (includePatterns != null) {
+        if (!includePatterns.isEmpty()) {
             if (anyMatches(includePatterns, fullyQualifiedName)) {
-                if (excludePatterns != null && anyMatches(excludePatterns, fullyQualifiedName)) {
+                if (!excludePatterns.isEmpty() && anyMatches(excludePatterns, fullyQualifiedName)) {
                     return;
                 }
                 processClass(clazz, context);
@@ -166,7 +167,7 @@ public class ViolationsGenerator {
             } else {
                 return;
             }
-        } else if (excludePatterns != null) {
+        } else if (!excludePatterns.isEmpty()) {
             if (anyMatches(excludePatterns, fullyQualifiedName)) {
                 return;
             }

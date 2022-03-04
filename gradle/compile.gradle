@@ -9,12 +9,12 @@ compileGroovy.options.encoding = 'UTF-8'
 
 // custom tasks for creating source/javadoc jars
 task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc.destinationDir
 }
 
@@ -23,7 +23,7 @@ repositories {
 }
 
 dependencies {
-    api('com.github.siom79.japicmp:japicmp:0.14.3') {
+    api('com.github.siom79.japicmp:japicmp:0.15.7') {
         exclude group:'com.google.guava'
         exclude group:'io.airlift'
         exclude group:'javax.xml.bind'

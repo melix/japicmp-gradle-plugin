@@ -17,8 +17,7 @@ dependencies {
 }
 
 task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    oldClasspath = configurations.baseline
-    newClasspath = configurations.current
+    oldClasspath.from(configurations.baseline)
+    newClasspath.from(configurations.current)
     txtOutputFile = file("$buildDir/reports/japi.txt")
 }
-
