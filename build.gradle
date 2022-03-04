@@ -8,7 +8,6 @@ buildScanRecipes {
     recipe 'git-commit', baseUrl: 'https://github.com/melix/japicmp-gradle-plugin/tree'
 }
 
-apply plugin: 'idea'
 apply from: 'gradle/credentials.gradle'
 apply from: 'gradle/compile.gradle'
 apply from: 'gradle/test.gradle'
@@ -18,6 +17,3 @@ dependencies {
     compileOnly localGroovy()
     compileOnly gradleApi()
 }
-
-// make sure we have proper input/output annotations before publishing
-publishPlugins.dependsOn(validateTaskProperties)
