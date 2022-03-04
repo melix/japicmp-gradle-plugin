@@ -3,14 +3,15 @@ package me.champeau.gradle
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.util.GradleVersion
-import org.junit.Rule
-import org.junit.rules.TemporaryFolder
 import spock.lang.Specification
+import spock.lang.TempDir
 
 import java.nio.file.Files
+import java.nio.file.Path
 
 abstract class BaseFunctionalTest extends Specification {
-    @Rule final TemporaryFolder testProjectDir = new TemporaryFolder()
+    @TempDir Path testProjectDir
+
     private static final String TEST_PROJECT_PATH = "/src/test/test-projects/"
 
     abstract String getTestProject()
@@ -18,7 +19,7 @@ abstract class BaseFunctionalTest extends Specification {
     def setup() {
         def sourceProject = new File(".", (TEST_PROJECT_PATH+testProject).replace((char)"/", File.separatorChar)).canonicalFile
         def sourcePath = sourceProject.toPath()
-        def destinationPath = testProjectDir.root.toPath()
+        def destinationPath = testProjectDir
 
         sourceProject.eachFileRecurse { f ->
             def path = f.toPath()
@@ -33,7 +34,7 @@ abstract class BaseFunctionalTest extends Specification {
     }
 
     File getBuildDir() {
-        new File(testProjectDir.root, "build")
+        testProjectDir.resolve("build").toFile()
     }
 
     File getReportsDir(String reportsDirName = 'reports') {
@@ -79,7 +80,7 @@ abstract class BaseFunctionalTest extends Specification {
     BuildResult run(String... tasks) {
         GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir.toFile())
                 .withArguments(*(extraArguments + (tasks as List)))
                 .withPluginClasspath()
                 .build()
@@ -88,7 +89,7 @@ abstract class BaseFunctionalTest extends Specification {
     BuildResult fails(String... tasks) {
         GradleRunner.create()
                 .withGradleVersion(gradleVersion)
-                .withProjectDir(testProjectDir.root)
+                .withProjectDir(testProjectDir.toFile())
                 .withArguments(*(extraArguments + (tasks as List)))
                 .withPluginClasspath()
                 .buildAndFail()

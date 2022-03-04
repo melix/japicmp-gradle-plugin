@@ -31,17 +31,10 @@ dependencies {
     }
 
     testImplementation gradleTestKit()
-    testImplementation('org.spockframework:spock-core:1.1-groovy-2.4') {
-        exclude group:'org.codehaus.groovy'
-    }
+    testImplementation('org.spockframework:spock-core:2.1-groovy-3.0')
 }
 
-
-tasks.withType(JavaCompile) {
-    options.incremental = true
-}
-
-test {
+tasks.named("test") {
     inputs.dir("src/test/test-projects")
             .withPropertyName('testProjects')
 }
