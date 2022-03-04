@@ -60,6 +60,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
@@ -93,8 +94,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                 configuration.htmlOutputFile,
                 configuration.txtOutputFile,
                 configuration.failOnModification,
-                configuration.richReport,
-                configuration.richReportFallbackDestinationDir);
+                configuration.richReport);
     }
 
     private JarArchiveComparatorOptions createOptions() {
@@ -164,12 +164,14 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
 
     private static String prettyPrint(List<JApiCmpArchive> archives) {
         StringBuilder sb = new StringBuilder();
-        for (JApiCmpArchive archive : archives) {
-            if (sb.length() > 0) {
-                sb.append(", ");
-            }
-            sb.append(archive.getFile().getName());
-        }
+        archives.stream()
+                .sorted(Comparator.comparing(JApiCmpArchive::getFile))
+                .forEachOrdered(archive -> {
+                    if (sb.length() > 0) {
+                        sb.append(", ");
+                    }
+                    sb.append(archive.getFile().getName());
+                });
         return sb.toString();
     }
 
@@ -245,8 +247,8 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
 
         boolean hasCustomViolations = false;
         if (richReport != null) {
-            final List<String> includedClasses = richReport.getIncludedClasses();
-            final List<String> excludedClasses = richReport.getExcludedClasses();
+            List<String> includedClasses = richReport.getIncludedClasses();
+            List<String> excludedClasses = richReport.getExcludedClasses();
             ViolationsGenerator generator = new ViolationsGenerator(includedClasses, excludedClasses);
             List<RuleConfiguration> rules = richReport.getRules();
             for (RuleConfiguration configuration : rules) {
@@ -285,13 +287,9 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                     break;
                 }
             }
-            File path = richReport.getDestinationDir();
-            if (path == null) {
-                path = richReportFallbackDestinationDir;
-            }
 
             try {
-                reportFile = new File(path, richReport.getReportName());
+                reportFile = richReport.getOutputFile();
                 richReport.getRenderer().newInstance().render(reportFile, new RichReportData(richReport.getTitle(), richReport.getDescription(), violations));
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new GradleException("Unable to create renderer", e);
@@ -306,9 +304,10 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             } catch (URISyntaxException e) {
                 reportLink = null;
             }
-            StringBuilder message = new StringBuilder("Detected binary changes between ")
+            StringBuilder message = new StringBuilder("Detected binary changes.\n")
+                    .append("    - current: ")
                     .append(prettyPrint(current))
-                    .append(" and ")
+                    .append("\n    - baseline: ")
                     .append(prettyPrint(baseline));
             if (reportLink != null) {
                 message.append(".").append(System.lineSeparator()).append(System.lineSeparator());

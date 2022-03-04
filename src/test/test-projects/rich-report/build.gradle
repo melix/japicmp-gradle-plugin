@@ -30,8 +30,8 @@ dependencies {
 }
 
 task japicmpGeneric(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    oldClasspath = configurations.baseline
-    newClasspath = configurations.current
+    oldClasspath.from(configurations.baseline)
+    newClasspath.from(configurations.current)
     accessModifier = 'public'
     richReport {
         reportName = 'rich.html'
@@ -41,8 +41,8 @@ task japicmpGeneric(type: me.champeau.gradle.japicmp.JapicmpTask) {
 }
 
 task japicmpStatus(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    oldClasspath = configurations.baseline
-    newClasspath = configurations.current
+    oldClasspath.from(configurations.baseline)
+    newClasspath.from(configurations.current)
     accessModifier = 'public'
     richReport {
         reportName = 'rich.html'
@@ -56,14 +56,13 @@ sourceSets {
 }
 
 task jarv2(type:Jar) {
-    classifier = 'v2'
+    archiveClassifier = 'v2'
     from sourceSets.main2.output
 }
 
 task japicmpChange(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    dependsOn jar, jarv2
-    oldClasspath = files(jar.archivePath)
-    newClasspath = files(jarv2.archivePath)
+    oldClasspath.from(jar)
+    newClasspath.from(jarv2)
     accessModifier = 'public'
     richReport {
         reportName = 'rich.html'

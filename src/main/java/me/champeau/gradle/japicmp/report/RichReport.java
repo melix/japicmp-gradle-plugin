@@ -2,30 +2,33 @@ package me.champeau.gradle.japicmp.report;
 
 import japicmp.model.JApiChangeStatus;
 import japicmp.model.JApiCompatibilityChange;
+import org.gradle.api.file.Directory;
+import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.file.RegularFile;
+import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
 import org.gradle.api.tasks.Optional;
-import org.gradle.api.tasks.OutputDirectory;
+import org.gradle.api.tasks.OutputFile;
 
 import java.io.File;
 import java.io.Serializable;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class RichReport implements Serializable {
+public abstract class RichReport {
 
-    private Class<? extends RichReportRenderer> renderer = GroovyReportRenderer.class;
-    private List<String> includedClasses;
-    private List<String> excludedClasses;
-    private File destinationDir;
-    private String reportName = "rich-report.html";
-    private String title;
-    private String description;
-    private List<RuleConfiguration> rules = new ArrayList<RuleConfiguration>();
-    private boolean addDefaultRules;
+    public RichReport() {
+        getAddDefaultRules().convention(false);
+        getRenderer().convention(GroovyReportRenderer.class);
+        getReportName().convention("rich-report.html");
+    }
 
     public void addRule(Class<? extends ViolationRule> rule, Map<String, String> params) {
-        rules.add(new ViolationRuleConfiguration(rule, params));
+        getRules().add(new ViolationRuleConfiguration(rule, params));
     }
 
     public void addRule(Class<? extends ViolationRule> rule) {
@@ -33,7 +36,7 @@ public class RichReport implements Serializable {
     }
 
     public void addSetupRule(Class<? extends SetupRule> rule, Map<String, String> params) {
-        rules.add(new SetupRuleConfiguration(rule, params));
+        getRules().add(new SetupRuleConfiguration(rule, params));
     }
 
     public void addSetupRule(Class<? extends SetupRule> rule) {
@@ -41,7 +44,7 @@ public class RichReport implements Serializable {
     }
 
     public void addPostProcessRule(Class<? extends PostProcessViolationsRule> rule, Map<String, String> params) {
-        rules.add(new PostProcessRuleConfiguration(rule, params));
+        getRules().add(new PostProcessRuleConfiguration(rule, params));
     }
 
     public void addPostProcessRule(Class<? extends PostProcessViolationsRule> rule) {
@@ -49,7 +52,7 @@ public class RichReport implements Serializable {
     }
 
     public void addRule(JApiCompatibilityChange change, Class<? extends ViolationRule> rule, Map<String, String> params) {
-        rules.add(new CompatibilityChangeViolationRuleConfiguration(rule, params, change));
+        getRules().add(new CompatibilityChangeViolationRuleConfiguration(rule, params, change));
     }
 
     public void addRule(JApiCompatibilityChange change, Class<? extends ViolationRule> rule) {
@@ -57,7 +60,7 @@ public class RichReport implements Serializable {
     }
 
     public void addRule(JApiChangeStatus status, Class<? extends ViolationRule> rule, Map<String, String> params) {
-        rules.add(new StatusChangeViolationRuleConfiguration(rule, params, status));
+        getRules().add(new StatusChangeViolationRuleConfiguration(rule, params, status));
     }
 
     public void addRule(JApiChangeStatus status, Class<? extends ViolationRule> rule) {
@@ -65,93 +68,140 @@ public class RichReport implements Serializable {
     }
 
     public void renderer(Class<? extends RichReportRenderer> rendererType) {
-        this.renderer = rendererType;
+        this.getRenderer().set(rendererType);
     }
 
     @Input
-    public Class<? extends RichReportRenderer> getRenderer() {
-        return renderer;
-    }
-
-    public void setRenderer(Class<? extends RichReportRenderer> renderer) {
-        this.renderer = renderer;
-    }
+    public abstract Property<Class<? extends RichReportRenderer>> getRenderer();
 
     @Optional
     @Input
-    public List<String> getIncludedClasses() {
-        return includedClasses;
-    }
-
-    public void setIncludedClasses(List<String> includedClasses) {
-        this.includedClasses = includedClasses;
-    }
+    public abstract ListProperty<String> getIncludedClasses();
 
     @Optional
     @Input
-    public List<String> getExcludedClasses() {
-        return excludedClasses;
-    }
+    public abstract ListProperty<String> getExcludedClasses();
 
-    public void setExcludedClasses(List<String> excludedClasses) {
-        this.excludedClasses = excludedClasses;
-    }
+    @Internal
+    public abstract DirectoryProperty getDestinationDir();
 
-    @Optional
-    @OutputDirectory
-    public File getDestinationDir() {
-        return destinationDir;
-    }
-
-    public void setDestinationDir(File destinationDir) {
-        this.destinationDir = destinationDir;
-    }
+    @Input
+    public abstract Property<String> getReportName();
 
     @Optional
     @Input
-    public String getReportName() {
-        return reportName;
-    }
-
-    public void setReportName(String reportName) {
-        this.reportName = reportName;
-    }
+    public abstract Property<String> getTitle();
 
     @Optional
     @Input
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    @Optional
-    @Input
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
+    public abstract Property<String> getDescription();
 
     @Input
-    public List<RuleConfiguration> getRules() {
-        return rules;
-    }
-
-    public void setRules(List<RuleConfiguration> rules) {
-        this.rules = rules;
-    }
+    public abstract ListProperty<RuleConfiguration> getRules();
 
     @Input
-    public boolean isAddDefaultRules() {
-        return addDefaultRules;
+    public abstract Property<Boolean> getAddDefaultRules();
+
+    @OutputFile
+    public Provider<RegularFile> getOutputFile() {
+        return getDestinationDir().zip(getReportName(), Directory::file);
     }
 
-    public void setAddDefaultRules(final boolean addDefaultRules) {
-        this.addDefaultRules = addDefaultRules;
+    public Configuration toConfiguration() {
+        return new Configuration(
+                getReportName().get(),
+                getRenderer().get(),
+                getIncludedClasses().getOrElse(Collections.emptyList()),
+                getExcludedClasses().getOrElse(Collections.emptyList()),
+                getTitle().getOrNull(),
+                getDescription().getOrNull(),
+                getRules().getOrElse(Collections.emptyList()),
+                getAddDefaultRules().get(),
+                getOutputFile().get().getAsFile()
+        );
     }
+
+    public static final class Configuration implements Serializable {
+        private final String reportName;
+        private final Class<? extends RichReportRenderer> renderer;
+        private final List<String> includedClasses;
+        private final List<String> excludedClasses;
+        private final String title;
+        private final String description;
+        private final List<RuleConfiguration> rules;
+        private final boolean addDefaultRules;
+        private final File outputFile;
+
+        public Configuration(String reportName,
+                             Class<? extends RichReportRenderer> renderer,
+                             List<String> includedClasses,
+                             List<String> excludedClasses,
+                             String title,
+                             String description,
+                             List<RuleConfiguration> rules,
+                             boolean addDefaultRules,
+                             File outputFile) {
+            this.reportName = reportName;
+            this.renderer = renderer;
+            this.includedClasses = includedClasses;
+            this.excludedClasses = excludedClasses;
+            this.title = title;
+            this.description = description;
+            this.rules = rules;
+            this.addDefaultRules = addDefaultRules;
+            this.outputFile = outputFile;
+        }
+
+        public String getReportName() {
+            return reportName;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public List<RuleConfiguration> getRules() {
+            return rules;
+        }
+
+        public boolean isAddDefaultRules() {
+            return addDefaultRules;
+        }
+
+        public File getOutputFile() {
+            return outputFile;
+        }
+
+        public Class<? extends RichReportRenderer> getRenderer() {
+            return renderer;
+        }
+
+        public List<String> getIncludedClasses() {
+            return includedClasses;
+        }
+
+        public List<String> getExcludedClasses() {
+            return excludedClasses;
+        }
+
+        @Override
+        public String toString() {
+            return "ReportConfiguration{" +
+                    "reportName='" + reportName + '\'' +
+                    ", renderer=" + renderer +
+                    ", includedClasses=" + includedClasses +
+                    ", excludedClasses=" + excludedClasses +
+                    ", title='" + title + '\'' +
+                    ", description='" + description + '\'' +
+                    ", rules=" + rules +
+                    ", addDefaultRules=" + addDefaultRules +
+                    ", outputFile=" + outputFile +
+                    '}';
+        }
+    }
+
 }

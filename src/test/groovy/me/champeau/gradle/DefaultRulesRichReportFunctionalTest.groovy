@@ -10,7 +10,6 @@ class DefaultRulesRichReportFunctionalTest extends BaseFunctionalTest {
         def result = fails "japicmp"
 
         then:
-        result.task(":japicmp").outcome == TaskOutcome.FAILED
         def report = getReport('rich', 'html').text
         report =~ '<a class=\'navbar-brand\' href=\'#\'>Binary compatibility report</a>'
         report =~ 'Class org.apache.commons.lang3.time.FastDateFormat: Is not binary compatible'

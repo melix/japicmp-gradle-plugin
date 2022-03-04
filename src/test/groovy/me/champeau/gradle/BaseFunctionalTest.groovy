@@ -82,6 +82,7 @@ abstract class BaseFunctionalTest extends Specification {
                 .withGradleVersion(gradleVersion)
                 .withProjectDir(testProjectDir.toFile())
                 .withArguments(*(extraArguments + (tasks as List)))
+                .forwardOutput()
                 .withPluginClasspath()
                 .build()
     }
@@ -92,6 +93,7 @@ abstract class BaseFunctionalTest extends Specification {
                 .withProjectDir(testProjectDir.toFile())
                 .withArguments(*(extraArguments + (tasks as List)))
                 .withPluginClasspath()
+                .forwardOutput()
                 .buildAndFail()
     }
 

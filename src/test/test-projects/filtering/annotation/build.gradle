@@ -12,22 +12,20 @@ sourceSets {
 }
 
 task jarv2(type:Jar) {
-    classifier = 'v2'
+    archiveClassifier = 'v2'
     from sourceSets.main2.output
 }
 
 task japicmpOnlyCheckStableApi(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    dependsOn jar, jarv2
-    oldClasspath = files(jar.archivePath)
-    newClasspath = files(jarv2.archivePath)
+    oldClasspath.from(jar)
+    newClasspath.from(jarv2)
     txtOutputFile = file("$buildDir/reports/japi.txt")
     annotationIncludes = ['@me.champeau.gradle.japicmp.StableApi']
 }
 
 task japicmpExcludeBetaApi(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    dependsOn jar, jarv2
-    oldClasspath = files(jar.archivePath)
-    newClasspath = files(jarv2.archivePath)
+    oldClasspath.from(jar)
+    newClasspath.from(jarv2)
     txtOutputFile = file("$buildDir/reports/japi.txt")
     annotationExcludes = ['@me.champeau.gradle.japicmp.BetaApi']
 }

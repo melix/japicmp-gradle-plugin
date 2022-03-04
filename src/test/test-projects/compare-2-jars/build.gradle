@@ -18,15 +18,13 @@ dependencies {
 }
 
 task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    oldClasspath = files(configurations.baseline.incoming.files)
-    newClasspath = files(configurations.current.incoming.files)
+    oldClasspath.from(configurations.baseline)
+    newClasspath.from(configurations.current)
     txtOutputFile = file("$buildDir/reports/japi.txt")
 }
 
 task japicmpWithExplicitClasspath(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    oldClasspath = files()
-    newClasspath = files()
-    oldArchives = files(configurations.baseline.incoming.files)
-    newArchives = files(configurations.current.incoming.files)
+    oldArchives.from(configurations.baseline)
+    newArchives.from(configurations.current)
     txtOutputFile = file("$buildDir/reports/japi.txt")
 }

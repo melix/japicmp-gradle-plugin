@@ -180,8 +180,8 @@ projects.each { projectName ->
     }
 
     def t = task "japicmp-${projectName}"(type: JapicmpTask) {
-        oldClasspath = baselineConf
-        newClasspath = currentConf
+        oldClasspath.from(baselineConf)
+        newClasspath.from(currentConf)
         onlyModified = true
         failOnModification = true
         ignoreMissingClasses = true

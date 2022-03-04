@@ -13,7 +13,12 @@ import org.gradle.api.artifacts.ResolvedArtifact;
 import org.gradle.api.artifacts.ResolvedDependency;
 import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.api.file.ConfigurableFileCollection;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
+import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.Property;
+import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.CacheableTask;
 import org.gradle.api.tasks.CompileClasspath;
 import org.gradle.api.tasks.Input;
@@ -22,9 +27,7 @@ import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
 import org.gradle.util.GradleVersion;
-import org.gradle.workers.IsolationMode;
 import org.gradle.workers.ProcessWorkerSpec;
-import org.gradle.workers.WorkerConfiguration;
 import org.gradle.workers.WorkerExecutor;
 
 import java.io.File;
@@ -32,45 +35,25 @@ import java.net.URISyntaxException;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 @CacheableTask
-public class JapicmpTask extends DefaultTask {
+public abstract class JapicmpTask extends DefaultTask {
 
-    private final FileCollection additionalJapicmpClasspath;
-    private List<String> packageIncludes = new ArrayList<>();
-    private List<String> packageExcludes = new ArrayList<>();
-    private List<String> classIncludes = new ArrayList<>();
-    private List<String> classExcludes = new ArrayList<>();
-    private List<String> methodIncludes = new ArrayList<>();
-    private List<String> methodExcludes = new ArrayList<>();
-    private List<String> fieldIncludes = new ArrayList<>();
-    private List<String> fieldExcludes = new ArrayList<>();
-    private List<String> annotationIncludes = new ArrayList<>();
-    private List<String> annotationExcludes = new ArrayList<>();
-    private List<FilterConfiguration> includeFilters = new ArrayList<>();
-    private List<FilterConfiguration> excludeFilters = new ArrayList<>();
-    private String accessModifier = "public";
-    private boolean onlyModified = false;
-    private boolean onlyBinaryIncompatibleModified = false;
-    private boolean failOnSourceIncompatibility = false;
-    private File xmlOutputFile;
-    private File htmlOutputFile;
-    private File txtOutputFile;
-    private boolean failOnModification = false;
-    private boolean includeSynthetic = false;
-    private FileCollection oldClasspath;
-    private FileCollection newClasspath;
-    private FileCollection oldArchives;
-    private FileCollection newArchives;
-    private boolean ignoreMissingClasses = false;
-    private RichReport richReport;
-    private final File richReportFallbackDestinationDir;
+    private final ConfigurableFileCollection additionalJapicmpClasspath;
 
     public JapicmpTask() {
-        ConfigurableFileCollection classpath = getProject().files();
+        getFailOnModification().convention(false);
+        getFailOnSourceIncompatibility().convention(false);
+        getIgnoreMissingClasses().convention(false);
+        getIncludeSynthetic().convention(false);
+        getOnlyBinaryIncompatibleModified().convention(false);
+        getOnlyModified().convention(false);
+        getAccessModifier().convention("public");
+        ConfigurableFileCollection classpath = getProject().getObjects().fileCollection();
         if (JavaVersion.current().isJava9Compatible()) {
             classpath.from(resolveJaxb());
         }
@@ -78,22 +61,15 @@ public class JapicmpTask extends DefaultTask {
             classpath.from(resolveGuava());
         }
         additionalJapicmpClasspath = classpath;
-        richReportFallbackDestinationDir = new File(getProject().getBuildDir(), "reports");
     }
 
     @TaskAction
     public void exec() {
-        List<JApiCmpWorkerAction.Archive> baseline = oldArchives != null ? toArchives(oldArchives) : inferArchives(oldClasspath);
-        List<JApiCmpWorkerAction.Archive> current = newArchives != null ? toArchives(newArchives) : inferArchives(newClasspath);
-        if (currentGradleGreaterOrEqualTo("5.6")) {
-            execForNewGradle(baseline, current);
-        } else {
-            execForOldGradle(baseline, current);
-        }
-    }
-
-    private boolean currentGradleGreaterOrEqualTo(String version) {
-        return GradleVersion.current().compareTo(GradleVersion.version(version)) >= 0;
+        ConfigurableFileCollection oldArchives = getOldArchives();
+        ConfigurableFileCollection newArchives = getNewArchives();
+        List<JApiCmpWorkerAction.Archive> baseline = !oldArchives.isEmpty() ? toArchives(oldArchives) : inferArchives(getOldClasspath());
+        List<JApiCmpWorkerAction.Archive> current = !newArchives.isEmpty() ? toArchives(newArchives) : inferArchives(getNewClasspath());
+        execForNewGradle(baseline, current);
     }
 
     private void execForNewGradle(final List<JApiCmpWorkerAction.Archive> baseline, final List<JApiCmpWorkerAction.Archive> current) {
@@ -110,40 +86,21 @@ public class JapicmpTask extends DefaultTask {
         });
     }
 
-    private void execForOldGradle(final List<JApiCmpWorkerAction.Archive> baseline, final List<JApiCmpWorkerAction.Archive> current) {
-        getWorkerExecutor().submit(JApiCmpWorkerAction.class, new Action<WorkerConfiguration>() {
-            @Override
-            public void execute(final WorkerConfiguration workerConfiguration) {
-                workerConfiguration.setIsolationMode(IsolationMode.PROCESS);
-                workerConfiguration.setClasspath(calculateWorkerClasspath());
-                workerConfiguration.setDisplayName("JApicmp check comparing " + current + " with " + baseline);
-                workerConfiguration.params(
-                        // we use a single configuration object, instead of passing each parameter directly,
-                        // because the worker API doesn't support "null" values
-                        calculateWorkerConfiguration(baseline, current)
-                );
-            }
-        });
-    }
-
     private WorkerExecutor getWorkerExecutor() {
         return getServices().get(WorkerExecutor.class);
     }
 
     private Set<File> calculateWorkerClasspath() {
         Set<File> classpath = new HashSet<>();
-        if (includeFilters != null) {
-            for (FilterConfiguration configuration : includeFilters) {
-                addClasspathFor(configuration.getFilterClass(), classpath);
-            }
+        for (FilterConfiguration configuration : getIncludeFilters().getOrElse(Collections.emptyList())) {
+            addClasspathFor(configuration.getFilterClass(), classpath);
         }
-        if (excludeFilters != null) {
-            for (FilterConfiguration configuration : excludeFilters) {
-                addClasspathFor(configuration.getFilterClass(), classpath);
-            }
+        for (FilterConfiguration configuration : getExcludeFilters().getOrElse(Collections.emptyList())) {
+            addClasspathFor(configuration.getFilterClass(), classpath);
         }
-        if (richReport != null) {
-            for (RuleConfiguration configuration : richReport.getRules()) {
+        if (getRichReport().isPresent()) {
+            RichReport richReport = getRichReport().get();
+            for (RuleConfiguration configuration : richReport.getRules().getOrElse(Collections.emptyList())) {
                 addClasspathFor(configuration.getRuleClass(), classpath);
             }
         }
@@ -153,35 +110,48 @@ public class JapicmpTask extends DefaultTask {
 
     private JapiCmpWorkerConfiguration calculateWorkerConfiguration(List<JApiCmpWorkerAction.Archive> baseline, List<JApiCmpWorkerAction.Archive> current) {
         return new JapiCmpWorkerConfiguration(
-                isIncludeSynthetic(),
-                isIgnoreMissingClasses(),
-                getPackageIncludes(),
-                getPackageExcludes(),
-                getClassIncludes(),
-                getClassExcludes(),
-                getMethodIncludes(),
-                getMethodExcludes(),
-                getFieldIncludes(),
-                getFieldExcludes(),
-                getAnnotationIncludes(),
-                getAnnotationExcludes(),
-                getIncludeFilters(),
-                getExcludeFilters(),
+                getIncludeSynthetic().get(),
+                getIgnoreMissingClasses().get(),
+                getPackageIncludes().getOrElse(Collections.emptyList()),
+                getPackageExcludes().getOrElse(Collections.emptyList()),
+                getClassIncludes().getOrElse(Collections.emptyList()),
+                getClassExcludes().getOrElse(Collections.emptyList()),
+                getMethodIncludes().getOrElse(Collections.emptyList()),
+                getMethodExcludes().getOrElse(Collections.emptyList()),
+                getFieldIncludes().getOrElse(Collections.emptyList()),
+                getFieldExcludes().getOrElse(Collections.emptyList()),
+                getAnnotationIncludes().getOrElse(Collections.emptyList()),
+                getAnnotationExcludes().getOrElse(Collections.emptyList()),
+                getIncludeFilters().getOrElse(Collections.emptyList()),
+                getExcludeFilters().getOrElse(Collections.emptyList()),
                 toArchives(getOldClasspath()),
                 toArchives(getNewClasspath()),
                 baseline,
                 current,
-                isOnlyModified(),
-                isOnlyBinaryIncompatibleModified(),
-                isFailOnSourceIncompatibility(),
-                getAccessModifier(),
-                getXmlOutputFile(),
-                getHtmlOutputFile(),
-                getTxtOutputFile(),
-                isFailOnModification(),
-                richReport,
-                richReportFallbackDestinationDir
+                getOnlyModified().get(),
+                getOnlyBinaryIncompatibleModified().get(),
+                getFailOnSourceIncompatibility().get(),
+                getAccessModifier().get(),
+                maybeFile(getXmlOutputFile()),
+                maybeFile(getHtmlOutputFile()),
+                maybeFile(getTxtOutputFile()),
+                getFailOnModification().get(),
+                reportConfigurationOf(getRichReport())
         );
+    }
+
+    private static RichReport.Configuration reportConfigurationOf(Provider<RichReport> report) {
+        if (report.isPresent()) {
+            return report.get().toConfiguration();
+        }
+        return null;
+    }
+
+    private static File maybeFile(RegularFileProperty property) {
+        if (property.isPresent()) {
+            return property.getAsFile().get();
+        }
+        return null;
     }
 
     private Configuration resolveJaxb() {
@@ -249,281 +219,122 @@ public class JapicmpTask extends DefaultTask {
     }
 
     public void richReport(Action<? super RichReport> configureAction) {
-        if (richReport == null) {
-            richReport = new RichReport();
+        if (!getRichReport().isPresent()) {
+            RichReport richReport = getProject().getObjects().newInstance(RichReport.class);
+            DirectoryProperty buildDirectory = getProject().getLayout().getBuildDirectory();
+            richReport.getDestinationDir().convention(buildDirectory.dir("reports"));
+            getRichReport().set(richReport);
         }
 
-        configureAction.execute(richReport);
+        configureAction.execute(getRichReport().get());
     }
 
     @Input
     @Optional
-    public List<String> getPackageIncludes() {
-        return packageIncludes;
-    }
-
-    public void setPackageIncludes(List<String> packageIncludes) {
-        this.packageIncludes = packageIncludes;
-    }
+    public abstract ListProperty<String> getPackageIncludes();
 
     @Input
     @Optional
-    public List<String> getPackageExcludes() {
-        return packageExcludes;
-    }
-
-    public void setPackageExcludes(List<String> packageExcludes) {
-        this.packageExcludes = packageExcludes;
-    }
+    public abstract ListProperty<String> getPackageExcludes();
 
     @Input
     @Optional
-    public List<String> getClassIncludes() {
-        return classIncludes;
-    }
-
-    public void setClassIncludes(List<String> classIncludes) {
-        this.classIncludes = classIncludes;
-    }
+    public abstract ListProperty<String> getClassIncludes();
 
     @Input
     @Optional
-    public List<String> getClassExcludes() {
-        return classExcludes;
-    }
-
-    public void setClassExcludes(List<String> classExcludes) {
-        this.classExcludes = classExcludes;
-    }
+    public abstract ListProperty<String> getClassExcludes();
 
     @Input
     @Optional
-    public List<String> getMethodIncludes() {
-        return methodIncludes;
-    }
-
-    public void setMethodIncludes(List<String> methodIncludes) {
-        this.methodIncludes = methodIncludes;
-    }
+    public abstract ListProperty<String> getMethodIncludes();
 
     @Input
     @Optional
-    public List<String> getMethodExcludes() {
-        return methodExcludes;
-    }
-
-    public void setMethodExcludes(List<String> methodExcludes) {
-        this.methodExcludes = methodExcludes;
-    }
+    public abstract ListProperty<String> getMethodExcludes();
 
     @Input
     @Optional
-    public List<String> getFieldIncludes() {
-        return fieldIncludes;
-    }
-
-    public void setFieldIncludes(List<String> fieldIncludes) {
-        this.fieldIncludes = fieldIncludes;
-    }
+    public abstract ListProperty<String> getFieldIncludes();
 
     @Input
     @Optional
-    public List<String> getFieldExcludes() {
-        return fieldExcludes;
-    }
-
-    public void setFieldExcludes(List<String> fieldExcludes) {
-        this.fieldExcludes = fieldExcludes;
-    }
+    public abstract ListProperty<String> getFieldExcludes();
 
     @Input
     @Optional
-    public List<String> getAnnotationIncludes() {
-        return annotationIncludes;
-    }
-
-    public void setAnnotationIncludes(List<String> annotationIncludes) {
-        this.annotationIncludes = annotationIncludes;
-    }
+    public abstract ListProperty<String> getAnnotationIncludes();
 
     @Input
     @Optional
-    public List<String> getAnnotationExcludes() {
-        return annotationExcludes;
-    }
-
-    public void setAnnotationExcludes(List<String> annotationExcludes) {
-        this.annotationExcludes = annotationExcludes;
-    }
+    public abstract ListProperty<String> getAnnotationExcludes();
 
     @Input
     @Optional
-    public List<FilterConfiguration> getIncludeFilters() {
-        return includeFilters;
-    }
-
-    public void setIncludeFilters(List<FilterConfiguration> includeFilters) {
-        this.includeFilters = includeFilters;
-    }
+    public abstract ListProperty<FilterConfiguration> getIncludeFilters();
 
     public void addIncludeFilter(Class<? extends Filter> includeFilterClass) {
-        includeFilters.add(new FilterConfiguration(includeFilterClass));
+        getIncludeFilters().add(new FilterConfiguration(includeFilterClass));
     }
 
     @Input
     @Optional
-    public List<FilterConfiguration> getExcludeFilters() {
-        return excludeFilters;
-    }
-
-    public void setExcludeFilters(List<FilterConfiguration> excludeFilters) {
-        this.excludeFilters = excludeFilters;
-    }
+    public abstract ListProperty<FilterConfiguration> getExcludeFilters();
 
     public void addExcludeFilter(Class<? extends Filter> excludeFilterClass) {
-        excludeFilters.add(new FilterConfiguration(excludeFilterClass));
+        getExcludeFilters().add(new FilterConfiguration(excludeFilterClass));
     }
 
     @Input
     @Optional
-    public String getAccessModifier() {
-        return accessModifier;
-    }
-
-    public void setAccessModifier(String accessModifier) {
-        this.accessModifier = accessModifier;
-    }
+    public abstract Property<String> getAccessModifier();
 
     @Input
-    public boolean isOnlyModified() {
-        return onlyModified;
-    }
-
-    public void setOnlyModified(boolean onlyModified) {
-        this.onlyModified = onlyModified;
-    }
+    public abstract Property<Boolean> getOnlyModified();
 
     @Input
-    public boolean isOnlyBinaryIncompatibleModified() {
-        return onlyBinaryIncompatibleModified;
-    }
-
-    public void setOnlyBinaryIncompatibleModified(boolean onlyBinaryIncompatibleModified) {
-        this.onlyBinaryIncompatibleModified = onlyBinaryIncompatibleModified;
-    }
+    public abstract Property<Boolean> getOnlyBinaryIncompatibleModified();
 
     @Input
-    public boolean isFailOnSourceIncompatibility() {
-        return failOnSourceIncompatibility;
-    }
-
-    public void setFailOnSourceIncompatibility(boolean failOnSourceIncompatibility) {
-        this.failOnSourceIncompatibility = failOnSourceIncompatibility;
-    }
+    public abstract Property<Boolean> getFailOnSourceIncompatibility();
 
     @OutputFile
     @Optional
-    public File getXmlOutputFile() {
-        return xmlOutputFile;
-    }
-
-    public void setXmlOutputFile(File xmlOutputFile) {
-        this.xmlOutputFile = xmlOutputFile;
-    }
+    public abstract RegularFileProperty getXmlOutputFile();
 
     @OutputFile
     @Optional
-    public File getHtmlOutputFile() {
-        return htmlOutputFile;
-    }
-
-    public void setHtmlOutputFile(File htmlOutputFile) {
-        this.htmlOutputFile = htmlOutputFile;
-    }
+    public abstract RegularFileProperty getHtmlOutputFile();
 
     @OutputFile
     @Optional
-    public File getTxtOutputFile() {
-        return txtOutputFile;
-    }
-
-    public void setTxtOutputFile(File txtOutputFile) {
-        this.txtOutputFile = txtOutputFile;
-    }
+    public abstract RegularFileProperty getTxtOutputFile();
 
     @Input
-    public boolean isFailOnModification() {
-        return failOnModification;
-    }
-
-    public void setFailOnModification(boolean failOnModification) {
-        this.failOnModification = failOnModification;
-    }
+    public abstract Property<Boolean> getFailOnModification();
 
     @Input
-    public boolean isIncludeSynthetic() {
-        return includeSynthetic;
-    }
-
-    public void setIncludeSynthetic(boolean includeSynthetic) {
-        this.includeSynthetic = includeSynthetic;
-    }
+    public abstract Property<Boolean> getIncludeSynthetic();
 
     @CompileClasspath
-    public FileCollection getOldClasspath() {
-        return oldClasspath;
-    }
-
-    public void setOldClasspath(FileCollection oldClasspath) {
-        this.oldClasspath = oldClasspath;
-    }
+    public abstract ConfigurableFileCollection getOldClasspath();
 
     @CompileClasspath
-    public FileCollection getNewClasspath() {
-        return newClasspath;
-    }
-
-    public void setNewClasspath(FileCollection newClasspath) {
-        this.newClasspath = newClasspath;
-    }
+    public abstract ConfigurableFileCollection getNewClasspath();
 
     @Optional
     @CompileClasspath
-    public FileCollection getOldArchives() {
-        return oldArchives;
-    }
-
-    public void setOldArchives(FileCollection oldArchives) {
-        this.oldArchives = oldArchives;
-    }
+    public abstract ConfigurableFileCollection getOldArchives();
 
     @Optional
     @CompileClasspath
-    public FileCollection getNewArchives() {
-        return newArchives;
-    }
-
-    public void setNewArchives(FileCollection newArchives) {
-        this.newArchives = newArchives;
-    }
+    public abstract ConfigurableFileCollection getNewArchives();
 
     @Input
-    public boolean isIgnoreMissingClasses() {
-        return ignoreMissingClasses;
-    }
-
-    public void setIgnoreMissingClasses(boolean ignoreMissingClasses) {
-        this.ignoreMissingClasses = ignoreMissingClasses;
-    }
+    public abstract Property<Boolean> getIgnoreMissingClasses();
 
     @Optional
     @Nested
-    public RichReport getRichReport() {
-        return richReport;
-    }
-
-    public void setRichReport(RichReport richReport) {
-        this.richReport = richReport;
-    }
+    public abstract Property<RichReport> getRichReport();
 
 }

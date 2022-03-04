@@ -84,8 +84,8 @@ Add the following to your build file:
 [source,groovy]
 ----
 task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    oldClasspath = files('path/to/reference.jar')
-    newClasspath = files(jar.archivePath)
+    oldClasspath.from(files('path/to/reference.jar'))
+    newClasspath.from(tasks.named('jar'))
     onlyModified = true
     failOnModification = true
     txtOutputFile = file("$buildDir/reports/japi.txt")
