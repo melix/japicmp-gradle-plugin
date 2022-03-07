@@ -1,3 +1,8 @@
+0.4.0
+-----
+   * Upgrade to the Provider API
+   * Drop support for older Gradle versions (requires 6+)
+   * Add support for violation transformers
 0.2.9
 -----
    * Upgrade to JApiCmp 0.14.3

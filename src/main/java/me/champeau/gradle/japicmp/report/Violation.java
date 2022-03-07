@@ -142,6 +142,8 @@ public class Violation {
 
     public static String describe(JApiCompatibilityChange change) {
         switch (change) {
+            case ANNOTATION_DEPRECATED_ADDED:
+                return "Deprecated annotation was added";
             case CLASS_REMOVED:
                 return "Class has been removed";
             case CLASS_NOW_ABSTRACT:
@@ -154,6 +156,8 @@ public class Violation {
                 return "Class type changed";
             case CLASS_NOW_CHECKED_EXCEPTION:
                 return "Exception is now a checked exception";
+            case CLASS_LESS_ACCESSIBLE:
+                return "Class is less accessible";
             case SUPERCLASS_REMOVED:
                 return "Superclass has been removed";
             case SUPERCLASS_ADDED:
@@ -186,14 +190,24 @@ public class Violation {
                 return "Method is no longer static";
             case METHOD_ADDED_TO_INTERFACE:
                 return "Method added to interface";
+            case METHOD_ADDED_TO_PUBLIC_CLASS:
+                return "Method added to public class";
             case METHOD_NOW_THROWS_CHECKED_EXCEPTION:
                 return "Method is now throws a checked exception";
+            case METHOD_NO_LONGER_THROWS_CHECKED_EXCEPTION:
+                return "Method is no longer throws a checked exception";
             case METHOD_ABSTRACT_ADDED_TO_CLASS:
                 return "Abstract method has been added to this class";
             case METHOD_ABSTRACT_ADDED_IN_SUPERCLASS:
                 return "Abstract method has been added to a superclass";
             case METHOD_ABSTRACT_ADDED_IN_IMPLEMENTED_INTERFACE:
                 return "Abstract method has been added in implemented interface";
+            case METHOD_DEFAULT_ADDED_IN_IMPLEMENTED_INTERFACE:
+                return "Default method has been added in implemented interface";
+            case METHOD_NEW_DEFAULT:
+                return "Method now provides default implementation";
+            case METHOD_ABSTRACT_NOW_DEFAULT:
+                return "Abstract method is now default method";
             case FIELD_STATIC_AND_OVERRIDES_STATIC:
                 return "Field is static and overrides another static field";
             case FIELD_LESS_ACCESSIBLE_THAN_IN_SUPERCLASS:
