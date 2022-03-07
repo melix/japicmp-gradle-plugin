@@ -241,4 +241,19 @@ public class Violation {
                 humanExplanation
         );
     }
+
+    public Violation withDescription(String description) {
+        return new Violation(
+                member,
+                severity,
+                description);
+    }
+
+    public Violation acceptWithDescription(String description) {
+        return new Violation(
+                member,
+                Severity.accepted,
+                humanExplanation + " (acceptation reason: " + description + ")"
+        );
+    }
 }
