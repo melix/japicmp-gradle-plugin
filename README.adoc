@@ -2,7 +2,7 @@
 :japicmp-url: https://github.com/siom79/japicmp
 :issues: https://github.com/melix/japicmp-gradle-plugin/issues
 :gradle-url: http://gradle.org/
-:plugin-version: 0.3.1
+:plugin-version: 0.4.0
 
 image:https://github.com/melix/japicmp-gradle-plugin/actions/workflows/gradle-build.yml/badge.svg["Build Status", link="https://github.com/melix/japicmp-gradle-plugin/actions/workflows/gradle-build.yml"]
 image:http://img.shields.io/badge/license-ASF2-blue.svg["Apache License 2", link="http://www.apache.org/licenses/LICENSE-2.0.txt"]
@@ -11,9 +11,17 @@ The japicmp-gradle-plugin provides binary compatibility reporting through {japic
 
 == Installation
 
-NOTE: Version 0.2+ of this plugin is NOT compatible with 0.1
+This plugin requires Gradle 6+. Use the following snippet inside a Gradle build file:
 
-This plugin requires Gradle 4+. Use the following snippet inside a Gradle build file:
+[source,groovy]
+[subs="attributes"]
+----
+plugins {
+    id 'me.champeau.gradle.japicmp' version '{plugin-version}'
+}
+----
+
+or (not recommended):
 
 [source,groovy]
 [subs="attributes"]
@@ -29,16 +37,6 @@ buildscript {
     }
 }
 apply plugin: 'me.champeau.gradle.japicmp'
-----
-
-or
-
-[source,groovy]
-[subs="attributes"]
-----
-plugins {
-    id 'me.champeau.gradle.japicmp' version '{plugin-version}'
-}
 ----
 
 == Configuration
@@ -83,12 +81,12 @@ Add the following to your build file:
 
 [source,groovy]
 ----
-task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
+tasks.register("japicmp", me.champeau.gradle.japicmp.JapicmpTask) {
     oldClasspath.from(files('path/to/reference.jar'))
     newClasspath.from(tasks.named('jar'))
     onlyModified = true
     failOnModification = true
-    txtOutputFile = file("$buildDir/reports/japi.txt")
+    txtOutputFile = layout.buildDirectory.file("reports/japi.txt")
 }
 ----
 
@@ -98,7 +96,7 @@ The plugin supports adding filters for bytecode members before they are consider
 
 [source,groovy]
 ----
-task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
+tasks.register("japicmp", me.champeau.gradle.japicmp.JapicmpTask) {
    ...
    addIncludeFilter(MyCustomFilter)
    addExcludeFilter(MyOtherFilter)
@@ -133,7 +131,7 @@ The report can be configured using the `richReport` block:
 
 [source,groovy]
 ----
-task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
+tasks.register("japicmp", me.champeau.gradle.japicmp.JapicmpTask) {
    ...
    richReport {
       ...
