@@ -46,6 +46,8 @@ import me.champeau.gradle.japicmp.report.StatusChangeViolationRuleConfiguration;
 import me.champeau.gradle.japicmp.report.Violation;
 import me.champeau.gradle.japicmp.report.ViolationRule;
 import me.champeau.gradle.japicmp.report.ViolationRuleConfiguration;
+import me.champeau.gradle.japicmp.report.ViolationTransformer;
+import me.champeau.gradle.japicmp.report.ViolationTransformerConfiguration;
 import me.champeau.gradle.japicmp.report.ViolationsGenerator;
 import org.gradle.api.GradleException;
 
@@ -266,6 +268,8 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                         generator.addRule(((StatusChangeViolationRuleConfiguration) configuration).getStatus(), (ViolationRule) rule);
                     } else if (configuration.getClass() == CompatibilityChangeViolationRuleConfiguration.class) {
                         generator.addRule(((CompatibilityChangeViolationRuleConfiguration) configuration).getChange(), (ViolationRule) rule);
+                    } else if (configuration.getClass() == ViolationTransformerConfiguration.class) {
+                        generator.addViolationTransformer((ViolationTransformer) rule);
                     }
                 } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
                     throw new GradleException("Unable to instantiate rule", e);

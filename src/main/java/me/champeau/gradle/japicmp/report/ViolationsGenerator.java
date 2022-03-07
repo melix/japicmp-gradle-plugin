@@ -24,10 +24,10 @@ import japicmp.model.JApiField;
 import japicmp.model.JApiHasChangeStatus;
 import japicmp.model.JApiImplementedInterface;
 import japicmp.model.JApiMethod;
-import me.champeau.gradle.japicmp.report.stdrules.UnchangedMemberRule;
 import me.champeau.gradle.japicmp.report.stdrules.BinaryIncompatibleRule;
 import me.champeau.gradle.japicmp.report.stdrules.RecordSeenMembersSetup;
 import me.champeau.gradle.japicmp.report.stdrules.SourceCompatibleRule;
+import me.champeau.gradle.japicmp.report.stdrules.UnchangedMemberRule;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class ViolationsGenerator {
@@ -46,6 +47,7 @@ public class ViolationsGenerator {
 
     private final List<SetupRule> setupRules = new ArrayList<>();
     private final List<PostProcessViolationsRule> postProcessRules = new ArrayList<>();
+    private final List<ViolationTransformer> violationTransformers = new ArrayList<>();
 
     public ViolationsGenerator(final List<String> includePatterns, final List<String> excludePatterns) {
         this.includePatterns = toPatterns(includePatterns);
@@ -102,9 +104,13 @@ public class ViolationsGenerator {
         violationRules.add(rule);
     }
 
+    public void addViolationTransformer(ViolationTransformer violationTransformer) {
+        violationTransformers.add(violationTransformer);
+    }
+
     public Map<String, List<Violation>> toViolations(List<JApiClass> classes) {
         addDefaultRuleIfNotConfigured();
-        Context ctx = new Context();
+        Context ctx = new Context(violationTransformers);
         for (SetupRule setupRule : setupRules) {
             setupRule.execute(ctx);
         }
@@ -239,8 +245,13 @@ public class ViolationsGenerator {
         // violations per fully-qualified class name
         private final Map<String, List<Violation>> violations = new LinkedHashMap<String, List<Violation>>();
         private final Map<String, Object> userData = new LinkedHashMap<>();
+        private final List<ViolationTransformer> transformers;
 
         private String currentClass;
+
+        private Context(List<ViolationTransformer> transformers) {
+            this.transformers = transformers;
+        }
 
         void maybeAddViolation(Violation v) {
             if (v == null) {
@@ -249,12 +260,17 @@ public class ViolationsGenerator {
             if (currentClass == null) {
                 throw new IllegalStateException();
             }
-            List<Violation> violations = this.violations.get(currentClass);
-            if (violations == null) {
-                violations = new ArrayList<Violation>();
-                this.violations.put(currentClass, violations);
+            Optional<Violation> violation = Optional.of(v);
+            for (ViolationTransformer transformer : transformers) {
+                violation = transformer.transform(currentClass, violation.get());
+                if (!violation.isPresent()) {
+                    break;
+                }
             }
-            violations.add(v);
+            if (violation.isPresent()) {
+                List<Violation> violations = this.violations.computeIfAbsent(currentClass, k -> new ArrayList<>());
+                violations.add(violation.get());
+            }
         }
 
         @Override

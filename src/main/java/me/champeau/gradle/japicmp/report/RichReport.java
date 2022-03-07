@@ -67,6 +67,14 @@ public abstract class RichReport {
         addRule(status, rule, null);
     }
 
+    public void addViolationTransformer(Class<? extends ViolationTransformer> transformer) {
+        getRules().add(new ViolationTransformerConfiguration(transformer, null));
+    }
+
+    public void addViolationTransformer(Class<? extends ViolationTransformer> transformer, Map<String, String> params) {
+        getRules().add(new ViolationTransformerConfiguration(transformer, params));
+    }
+
     public void renderer(Class<? extends RichReportRenderer> rendererType) {
         this.getRenderer().set(rendererType);
     }
