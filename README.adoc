@@ -61,6 +61,7 @@ fieldIncludes:: List of fields to include. Type: _List<String>_
 fieldExcludes:: List of fields to exclude. Type: _List<String>_
 annotationIncludes:: List of annotations to include. The string must begin with '@'. Type: _List<String>_
 annotationExcludes:: List of annotations to exclude. The string must begin with '@'. Type: _List<String>_
+compatibilityChangeExcludes:: List of compatibility changes to exclude, marking them as source and binary compatible. The string must match a value of the `japicmp.model.JApiCompatibilityChange` enum. Type: _List<String>_
 accessModifier:: Sets the access modifier level (public, package, protected, private). Type: _String_. Default value: _public_
 failOnSourceIncompatibility:: Fails if the changes result in source level incompatibility. Setting this to `true` also implicitly enables `failOnModification`. imType: _boolean_. Default value: _false_
 failOnModification:: When set to true, the build fails in case a modification has been detected. Type: _boolean_. Default value: _false_
@@ -89,6 +90,22 @@ tasks.register("japicmp", me.champeau.gradle.japicmp.JapicmpTask) {
     txtOutputFile = layout.buildDirectory.file("reports/japi.txt")
 }
 ----
+
+== JApiCompatibilityChange filtering
+
+The plugin supports simple exclusion for identified compatibility changes, turning these into binary and source
+compatible during API comparison:
+
+[source,groovy]
+----
+tasks.register("japicmp", me.champeau.gradle.japicmp.JapicmpTask) {
+   ...
+   compatibilityChangeExcludes = [ "METHOD_NEW_DEFAULT" ]
+}
+----
+
+The `JApiCompatibilityChange` enum from japicmp represents the list of identified compatibility changes which
+can be excluded. For simplicity, the plugin is configured with a _List<String>_ instead.
 
 == Custom filtering
 
