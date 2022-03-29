@@ -37,6 +37,7 @@ public class JapiCmpWorkerConfiguration implements Serializable {
     protected final List<String> annotationExcludes;
     protected final List<FilterConfiguration> includeFilters;
     protected final List<FilterConfiguration> excludeFilters;
+    protected final List<String> compatibilityChangeExcludes;
     protected final List<JApiCmpWorkerAction.Archive> oldClasspath;
     protected final List<JApiCmpWorkerAction.Archive> newClasspath;
     protected final List<JApiCmpWorkerAction.Archive> oldArchives;
@@ -65,6 +66,7 @@ public class JapiCmpWorkerConfiguration implements Serializable {
                                       final List<String> annotationExcludes,
                                       final List<FilterConfiguration> includeFilters,
                                       final List<FilterConfiguration> excludeFilters,
+                                      final List<String> compatibilityChangeExcludes,
                                       final List<JApiCmpWorkerAction.Archive> oldClasspath,
                                       final List<JApiCmpWorkerAction.Archive> newClasspath,
                                       final List<JApiCmpWorkerAction.Archive> oldArchives,
@@ -90,6 +92,7 @@ public class JapiCmpWorkerConfiguration implements Serializable {
         this.fieldExcludes = fieldExcludes;
         this.annotationIncludes = annotationIncludes;
         this.annotationExcludes = annotationExcludes;
+        this.compatibilityChangeExcludes = compatibilityChangeExcludes;
         this.includeFilters = includeFilters;
         this.excludeFilters = excludeFilters;
         this.oldClasspath = oldClasspath;

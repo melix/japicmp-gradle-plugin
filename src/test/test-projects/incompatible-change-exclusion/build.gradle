@@ -1,0 +1,40 @@
+plugins {
+    id 'java'
+    id 'me.champeau.gradle.japicmp'
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main2
+}
+
+task jarv2(type:Jar) {
+    archiveClassifier = 'v2'
+    from sourceSets.main2.output
+}
+
+task japicmpDetectsNewDefaultMethodByDefault(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath.from(jar)
+    newClasspath.from(jarv2)
+    failOnModification = true
+    failOnSourceIncompatibility = true
+}
+
+task configuredToIgnoreNewDefaultMethod(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath.from(jar)
+    newClasspath.from(jarv2)
+    failOnModification = true
+    failOnSourceIncompatibility = true
+    compatibilityChangeExcludes = [ "METHOD_NEW_DEFAULT" ]
+}
+
+task configuredWithBadCompatibilityChange(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath.from(jar)
+    newClasspath.from(jarv2)
+    failOnModification = true
+    failOnSourceIncompatibility = true
+    compatibilityChangeExcludes = [ "METHOD_NEWISH_DEFAULT" ]
+}

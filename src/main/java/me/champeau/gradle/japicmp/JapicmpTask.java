@@ -1,6 +1,7 @@
 package me.champeau.gradle.japicmp;
 
 import japicmp.filter.Filter;
+import japicmp.model.JApiCompatibilityChange;
 import me.champeau.gradle.japicmp.filters.FilterConfiguration;
 import me.champeau.gradle.japicmp.report.RichReport;
 import me.champeau.gradle.japicmp.report.RuleConfiguration;
@@ -124,6 +125,7 @@ public abstract class JapicmpTask extends DefaultTask {
                 getAnnotationExcludes().getOrElse(Collections.emptyList()),
                 getIncludeFilters().getOrElse(Collections.emptyList()),
                 getExcludeFilters().getOrElse(Collections.emptyList()),
+                getCompatibilityChangeExcludes().getOrElse(Collections.emptyList()),
                 toArchives(getOldClasspath()),
                 toArchives(getNewClasspath()),
                 baseline,
@@ -284,6 +286,10 @@ public abstract class JapicmpTask extends DefaultTask {
     public void addExcludeFilter(Class<? extends Filter> excludeFilterClass) {
         getExcludeFilters().add(new FilterConfiguration(excludeFilterClass));
     }
+
+    @Input
+    @Optional
+    public abstract ListProperty<String> getCompatibilityChangeExcludes();
 
     @Input
     @Optional

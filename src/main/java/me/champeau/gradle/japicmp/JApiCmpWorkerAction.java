@@ -18,6 +18,7 @@ package me.champeau.gradle.japicmp;
 import japicmp.cmp.JApiCmpArchive;
 import japicmp.cmp.JarArchiveComparator;
 import japicmp.cmp.JarArchiveComparatorOptions;
+import japicmp.cmp.JarArchiveComparatorOptions.OverrideCompatibilityChange;
 import japicmp.config.Options;
 import japicmp.filter.AnnotationBehaviorFilter;
 import japicmp.filter.AnnotationClassFilter;
@@ -29,6 +30,8 @@ import japicmp.filter.JavadocLikeFieldFilter;
 import japicmp.filter.JavadocLikePackageFilter;
 import japicmp.model.AccessModifier;
 import japicmp.model.JApiClass;
+import japicmp.model.JApiCompatibilityChange;
+import japicmp.model.JApiSemanticVersionLevel;
 import japicmp.output.stdout.StdoutOutputGenerator;
 import japicmp.output.xml.XmlOutput;
 import japicmp.output.xml.XmlOutputGenerator;
@@ -85,6 +88,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                 configuration.annotationExcludes,
                 configuration.includeFilters,
                 configuration.excludeFilters,
+                configuration.compatibilityChangeExcludes,
                 configuration.oldClasspath,
                 configuration.newClasspath,
                 configuration.oldArchives,
@@ -146,6 +150,11 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         }
         for (FilterConfiguration excludeFilter : excludeFilters) {
             options.getFilters().getExcludes().add(instantiateFilter(excludeFilter));
+        }
+        for (String override : compatibilityChangeExcludes) {
+            JApiCompatibilityChange overrideChange = JApiCompatibilityChange.valueOf(override);
+            options.addOverrideCompatibilityChange(new OverrideCompatibilityChange(overrideChange,
+                true, true, JApiSemanticVersionLevel.PATCH));
         }
 
         return options;
