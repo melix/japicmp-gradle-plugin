@@ -1,0 +1,2 @@
+include(":new-library")
+include(":old-library")
