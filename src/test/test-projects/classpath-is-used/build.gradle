@@ -1,0 +1,36 @@
+plugins {
+    id 'java'
+    id 'me.champeau.gradle.japicmp'
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main2
+}
+
+dependencies {
+    implementation project(":old-library")
+    main2Implementation project(":new-library")
+}
+
+task jarv2(type:Jar) {
+    archiveClassifier = 'v2'
+    from sourceSets.main2.output
+}
+
+task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath.from(configurations.runtimeClasspath)
+    newClasspath.from(configurations.main2RuntimeClasspath)
+    oldArchives.from(jar)
+    newArchives.from(jarv2)
+    txtOutputFile = file("$buildDir/reports/japi.txt")
+}
+
+task japicmpWithoutClasspath(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldArchives.from(jar)
+    newArchives.from(jarv2)
+    txtOutputFile = file("$buildDir/reports/japi.txt")
+}
