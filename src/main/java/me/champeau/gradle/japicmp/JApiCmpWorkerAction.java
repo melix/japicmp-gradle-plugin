@@ -65,6 +65,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements Runnable {
 
@@ -102,6 +103,8 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
     private JarArchiveComparatorOptions createOptions() {
         JarArchiveComparatorOptions options = new JarArchiveComparatorOptions();
         options.setClassPathMode(JarArchiveComparatorOptions.ClassPathMode.TWO_SEPARATE_CLASSPATHS);
+        options.setOldClassPath(oldClasspath.stream().map(a -> a.file.getAbsolutePath()).collect(Collectors.toList()));
+        options.setNewClassPath(newClasspath.stream().map(a -> a.file.getAbsolutePath()).collect(Collectors.toList()));
         options.setIncludeSynthetic(includeSynthetic);
         options.getIgnoreMissingClasses().setIgnoreAllMissingClasses(ignoreMissingClasses);
         for (String packageInclude : packageIncludes) {
