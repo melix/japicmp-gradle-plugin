@@ -14,7 +14,7 @@ class ClasspathIsUsedFunctionalTest extends BaseFunctionalTest {
         // Superclasses can only be reported if the classpath is present
         hasTextReport('''
 ***! MODIFIED CLASS: PUBLIC me.champeau.gradle.japicmp.Subtype  (not serializable)
-\t===  CLASS FILE FORMAT VERSION: 61.0 <- 61.0
+\t===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
 \t***! MODIFIED SUPERCLASS: me.champeau.gradle.japicmp.ChangedLibrarySuperclass (<- me.champeau.gradle.japicmp.LibrarySuperclass)
 \t===  UNCHANGED CONSTRUCTOR: PUBLIC Subtype()
 ''')
