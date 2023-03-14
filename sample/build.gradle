@@ -15,7 +15,7 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath "me.champeau.gradle:japicmp-gradle-plugin:0.1.2"
+        classpath "me.champeau.gradle:japicmp-gradle-plugin:0.4.1"
     }
 }
 
