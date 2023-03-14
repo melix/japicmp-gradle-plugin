@@ -7,25 +7,19 @@ artifacts {
     archives sourcesJar, javadocJar
 }
 
-pluginBundle {
+gradlePlugin {
     website = 'https://github.com/melix/japicmp-gradle-plugin'
     vcsUrl = 'https://github.com/melix/japicmp-gradle-plugin'
-    description = 'Gradle Plugin for JApicmp'
-    tags = ['jacpicmp']
 
     plugins {
         japicmpPlugin {
             id = 'me.champeau.gradle.japicmp'
+            implementationClass = 'me.champeau.gradle.japicmp.JapicmpPlugin'
             displayName = 'Gradle Plugin for JApicmp'
+            description = 'Gradle Plugin for JApicmp'
+            tags.set(['jacpicmp'])
         }
     }
-
-    mavenCoordinates {
-        groupId = project.group
-        artifactId = project.name
-        version = project.version
-    }
-
 }
 
 publishing {
@@ -39,11 +33,7 @@ publishing {
 
 signing {
     useGpgCmd()
-}
-
-publishing.publications.all { pub ->
-    signing {
-        sign pub
+    publishing.publications.all { pub ->
+        sign(pub)
     }
 }
-
