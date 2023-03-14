@@ -8,7 +8,6 @@ buildScanRecipes {
     recipe 'git-commit', baseUrl: 'https://github.com/melix/japicmp-gradle-plugin/tree'
 }
 
-apply from: 'gradle/credentials.gradle'
 apply from: 'gradle/compile.gradle'
 apply from: 'gradle/test.gradle'
 apply from: 'gradle/publishing.gradle'
