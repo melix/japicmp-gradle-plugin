@@ -1,10 +1,20 @@
-// configuration of the Maven artifacts
-apply plugin: 'maven-publish'
-apply plugin: 'signing'
+plugins {
+    id 'groovy-gradle-plugin'
+    id 'maven-publish'
+    id 'signing'
+}
 
-// add javadoc/source jar tasks as artifacts
-artifacts {
-    archives sourcesJar, javadocJar
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+    withSourcesJar()
+    withJavadocJar()
+}
+
+tasks.named("test") {
+    inputs.dir("src/test/test-projects")
+            .withPropertyName('testProjects')
 }
 
 gradlePlugin {
@@ -25,7 +35,7 @@ gradlePlugin {
 publishing {
     repositories {
         maven {
-            name 'test'
+            name 'build'
             url "${buildDir}/repo"
         }
     }
