@@ -10,10 +10,6 @@ buildScanRecipes {
     recipe 'git-commit', baseUrl: 'https://github.com/melix/japicmp-gradle-plugin/tree'
 }
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     api('com.github.siom79.japicmp:japicmp:0.17.2') {
         exclude group: 'com.google.guava'
