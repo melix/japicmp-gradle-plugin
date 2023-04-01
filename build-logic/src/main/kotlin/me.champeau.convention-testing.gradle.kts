@@ -11,6 +11,13 @@ val testedGradleVersions = otherVersions - wrapperVersion
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+
+    maxParallelForks = if (System.getenv("CI") != null) {
+        Runtime.getRuntime().availableProcessors()
+    } else {
+        // https://docs.gradle.org/8.0/userguide/performance.html#execute_tests_in_parallel
+        (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+    }
 }
 
 tasks.test {
