@@ -8,7 +8,7 @@ pluginManagement {
 }
 
 plugins {
-    id "com.gradle.enterprise" version "3.12.4"
+    id("com.gradle.enterprise") version "3.12.4"
 }
 
 dependencyResolutionManagement {
@@ -17,12 +17,12 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = 'japicmp-gradle-plugin'
+rootProject.name = "japicmp-gradle-plugin"
 
 gradleEnterprise {
     buildScan {
-        termsOfServiceUrl = 'https://gradle.com/terms-of-service'
-        termsOfServiceAgree = 'yes'
+        termsOfServiceUrl = "https://gradle.com/terms-of-service"
+        termsOfServiceAgree = "yes"
         publishAlwaysIf(System.getenv("CI") != null)
     }
 }
