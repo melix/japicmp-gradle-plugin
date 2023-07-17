@@ -12,6 +12,14 @@ val testedGradleVersions = otherVersions - wrapperVersion
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 
+    val testJavaVersion = providers.gradleProperty("me.champeau.japicmp.javaToolchain.test")
+        .getOrElse("8")
+    javaLauncher.set(
+        javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(testJavaVersion)
+        }
+    )
+
     maxParallelForks = if (System.getenv("CI") != null) {
         Runtime.getRuntime().availableProcessors()
     } else {
