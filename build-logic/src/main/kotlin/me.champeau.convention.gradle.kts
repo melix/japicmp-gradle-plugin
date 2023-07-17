@@ -6,7 +6,7 @@ plugins {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
+        languageVersion = JavaLanguageVersion.of(8)
     }
     withSourcesJar()
     withJavadocJar()
@@ -17,8 +17,8 @@ tasks.named("test") {
 }
 
 gradlePlugin {
-    website.set("https://github.com/melix/japicmp-gradle-plugin")
-    vcsUrl.set("https://github.com/melix/japicmp-gradle-plugin")
+    website = "https://github.com/melix/japicmp-gradle-plugin"
+    vcsUrl = "https://github.com/melix/japicmp-gradle-plugin"
 
     plugins {
         create("japicmpPlugin") {
@@ -26,7 +26,7 @@ gradlePlugin {
             implementationClass = "me.champeau.gradle.japicmp.JapicmpPlugin"
             displayName = "Gradle Plugin for JApicmp"
             description = "Gradle Plugin for JApicmp"
-            tags.set(listOf("jacpicmp"))
+            tags = listOf("jacpicmp")
         }
     }
 }
