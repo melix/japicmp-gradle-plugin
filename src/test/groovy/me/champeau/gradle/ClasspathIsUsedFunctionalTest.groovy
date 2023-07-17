@@ -1,5 +1,6 @@
 package me.champeau.gradle
 
+import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.TaskOutcome
 
 class ClasspathIsUsedFunctionalTest extends BaseFunctionalTest {
@@ -11,13 +12,30 @@ class ClasspathIsUsedFunctionalTest extends BaseFunctionalTest {
 
         then:
         result.task(":japicmp").outcome == TaskOutcome.SUCCESS
+        def byteCodeVersion
+        switch (JavaVersion.current()) {
+            case JavaVersion.VERSION_1_8:
+                byteCodeVersion = '52.0'
+                break
+            case JavaVersion.VERSION_11:
+                byteCodeVersion = '55.0'
+                break
+            case JavaVersion.VERSION_17:
+                byteCodeVersion = '61.0'
+                break
+            case JavaVersion.VERSION_19:
+                byteCodeVersion = '63.0'
+                break
+            default:
+                throw new IllegalStateException("Need to update the byteCode version mapping for Java ${JavaVersion.current()}")
+        }
         // Superclasses can only be reported if the classpath is present
-        hasTextReport('''
+        hasTextReport("""
 ***! MODIFIED CLASS: PUBLIC me.champeau.gradle.japicmp.Subtype  (not serializable)
-\t===  CLASS FILE FORMAT VERSION: 52.0 <- 52.0
+\t===  CLASS FILE FORMAT VERSION: $byteCodeVersion <- $byteCodeVersion
 \t***! MODIFIED SUPERCLASS: me.champeau.gradle.japicmp.ChangedLibrarySuperclass (<- me.champeau.gradle.japicmp.LibrarySuperclass)
 \t===  UNCHANGED CONSTRUCTOR: PUBLIC Subtype()
-''')
+""")
         noHtmlReport()
         noRichReport()
     }
