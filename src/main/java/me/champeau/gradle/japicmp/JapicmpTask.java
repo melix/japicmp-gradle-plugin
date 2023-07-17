@@ -1,7 +1,6 @@
 package me.champeau.gradle.japicmp;
 
 import japicmp.filter.Filter;
-import japicmp.model.JApiCompatibilityChange;
 import me.champeau.gradle.japicmp.filters.FilterConfiguration;
 import me.champeau.gradle.japicmp.report.RichReport;
 import me.champeau.gradle.japicmp.report.RuleConfiguration;
@@ -27,7 +26,6 @@ import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
-import org.gradle.util.GradleVersion;
 import org.gradle.workers.ProcessWorkerSpec;
 import org.gradle.workers.WorkerExecutor;
 
@@ -58,9 +56,7 @@ public abstract class JapicmpTask extends DefaultTask {
         if (JavaVersion.current().isJava9Compatible()) {
             classpath.from(resolveJaxb());
         }
-        if (GradleVersion.current().compareTo(GradleVersion.version("6.0")) >= 0) {
-            classpath.from(resolveGuava());
-        }
+        classpath.from(resolveGuava());
         additionalJapicmpClasspath = classpath;
     }
 
