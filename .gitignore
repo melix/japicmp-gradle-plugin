@@ -1,4 +1,7 @@
 /.nb-gradle/
-.gradle/
-/build/
+.gradle
+.ds_store
+build
 .idea
+.fleet
+*.iml
