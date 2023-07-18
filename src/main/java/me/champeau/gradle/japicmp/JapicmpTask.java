@@ -156,9 +156,9 @@ public abstract class JapicmpTask extends DefaultTask {
         Project project = getProject();
         DependencyHandler dependencies = project.getDependencies();
         return project.getConfigurations().detachedConfiguration(
-                dependencies.create("javax.xml.bind:jaxb-api:2.3.0"),
-                dependencies.create("com.sun.xml.bind:jaxb-core:2.3.0.1"),
-                dependencies.create("com.sun.xml.bind:jaxb-impl:2.3.0.1"),
+                dependencies.create("javax.xml.bind:jaxb-api:2.3.1"),
+                dependencies.create("com.sun.xml.bind:jaxb-core:3.0.2"),
+                dependencies.create("com.sun.xml.bind:jaxb-impl:3.0.2"),
                 dependencies.create("javax.activation:activation:1.1.1")
         );
     }
