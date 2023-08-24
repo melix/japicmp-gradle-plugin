@@ -15,23 +15,53 @@
  */
 package me.champeau.gradle.japicmp.report;
 
+import org.gradle.api.tasks.Input;
+import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Optional;
+
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
 
 public class RuleConfiguration<T> implements Serializable {
+
     protected final Class<? extends T> ruleClass;
     protected final Map<String, String> arguments;
+    protected final Map<String, String> normalizedArguments;
 
     public RuleConfiguration(final Class<? extends T> ruleClass, final Map<String, String> arguments) {
         this.ruleClass = ruleClass;
         this.arguments = arguments;
+        this.normalizedArguments = null;
     }
 
+    public RuleConfiguration(final Class<? extends T> ruleClass, final Map<String, String> arguments, final Map<String, String> normalizedArguments) {
+        this.ruleClass = ruleClass;
+        this.arguments = arguments;
+        this.normalizedArguments = normalizedArguments;
+    }
+
+    @Input
     public Class<? extends T> getRuleClass() {
         return ruleClass;
     }
 
+    @Internal
     public Map<String, String> getArguments() {
         return arguments;
     }
+
+    @Input
+    @Optional
+    public Map<String, String> getNormalizedArguments() {
+        Map<String, String> mergedArguments = new HashMap<>();
+        if(null != arguments) {
+            mergedArguments.putAll(arguments);
+        }
+        if(null != normalizedArguments) {
+            mergedArguments.putAll(normalizedArguments);
+        }
+        return mergedArguments;
+    }
+
 }

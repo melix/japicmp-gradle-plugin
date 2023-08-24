@@ -21,4 +21,17 @@ public class ViolationTransformerConfiguration extends RuleConfiguration<Violati
     public ViolationTransformerConfiguration(Class<? extends ViolationTransformer> ruleClass, Map<String, String> arguments) {
         super(ruleClass, arguments);
     }
+
+    /**
+     * This constructor allows to override entries in the {@code japiCmp.richReport.rules } collection exposed by {@link RuleConfiguration#getNormalizedArguments()} } () getNormalizedArguments()}.
+     * Although {@link RuleConfiguration#getArguments()} getArguments()} } collection contains the rule arguments, {@link RuleConfiguration#getNormalizedArguments()} } () getNormalizedArguments()} is the collection used as Gradle task input.
+     * This allows to apply some normalization when inputs are volatile (ie. absolute paths in rule).
+     *
+     * @param ruleClass rule class
+     * @param arguments rule arguments
+     * @param normalizedArguments normalized rule arguments
+     */
+    public ViolationTransformerConfiguration(Class<? extends ViolationTransformer> ruleClass, Map<String, String> arguments, Map<String, String> normalizedArguments) {
+        super(ruleClass, arguments, normalizedArguments);
+    }
 }

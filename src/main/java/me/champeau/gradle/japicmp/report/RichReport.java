@@ -10,6 +10,7 @@ import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.Input;
 import org.gradle.api.tasks.Internal;
+import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputFile;
 
@@ -75,6 +76,10 @@ public abstract class RichReport {
         getRules().add(new ViolationTransformerConfiguration(transformer, params));
     }
 
+    public void addViolationTransformerWithNormalization(Class<? extends ViolationTransformer> transformer, Map<String, String> params, Map<String, String> normalizedParams) {
+        getRules().add(new ViolationTransformerConfiguration(transformer, params, normalizedParams));
+    }
+
     public void renderer(Class<? extends RichReportRenderer> rendererType) {
         this.getRenderer().set(rendererType);
     }
@@ -104,7 +109,7 @@ public abstract class RichReport {
     @Input
     public abstract Property<String> getDescription();
 
-    @Input
+    @Nested
     public abstract ListProperty<RuleConfiguration> getRules();
 
     @Input
