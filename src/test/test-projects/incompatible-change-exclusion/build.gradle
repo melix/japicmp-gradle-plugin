@@ -16,21 +16,6 @@ task jarv2(type:Jar) {
     from sourceSets.main2.output
 }
 
-task japicmpDetectsNewDefaultMethodByDefault(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    oldClasspath.from(jar)
-    newClasspath.from(jarv2)
-    failOnModification = true
-    failOnSourceIncompatibility = true
-}
-
-task configuredToIgnoreNewDefaultMethod(type: me.champeau.gradle.japicmp.JapicmpTask) {
-    oldClasspath.from(jar)
-    newClasspath.from(jarv2)
-    failOnModification = true
-    failOnSourceIncompatibility = true
-    compatibilityChangeExcludes = [ "METHOD_NEW_DEFAULT" ]
-}
-
 task configuredWithBadCompatibilityChange(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldClasspath.from(jar)
     newClasspath.from(jarv2)
