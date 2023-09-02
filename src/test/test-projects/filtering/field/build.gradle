@@ -19,27 +19,27 @@ task jarv2(type:Jar) {
 task japicmpFieldIncludeOnlyBad(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldClasspath.from(jar)
     newClasspath.from(jarv2)
-    txtOutputFile = file("$buildDir/reports/japi.txt")
+    txtOutputFile = layout.buildDirectory.file('reports/japi.txt').get().asFile
     fieldIncludes = ['me.champeau.gradle.japicmp.A#bad']
 }
 
 task japicmpFieldIncludeOnlyGood(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldClasspath.from(jar)
     newClasspath.from(jarv2)
-    txtOutputFile = file("$buildDir/reports/japi.txt")
+    txtOutputFile = layout.buildDirectory.file('reports/japi.txt').get().asFile
     fieldIncludes = ['me.champeau.gradle.japicmp.A#unchanged']
 }
 
 task japiCmpFieldExcludeKeepBad(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldClasspath.from(jar)
     newClasspath.from(jarv2)
-    txtOutputFile = file("$buildDir/reports/japi.txt")
+    txtOutputFile = layout.buildDirectory.file('reports/japi.txt').get().asFile
     fieldExcludes = ['me.champeau.gradle.japicmp.A#unchanged']
 }
 
 task japicmpFieldExcludeKeepGood(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldClasspath.from(jar)
     newClasspath.from(jarv2)
-    txtOutputFile = file("$buildDir/reports/japi.txt")
+    txtOutputFile = layout.buildDirectory.file('reports/japi.txt').get().asFile
     fieldExcludes = ['me.champeau.gradle.japicmp.A#bad']
 }

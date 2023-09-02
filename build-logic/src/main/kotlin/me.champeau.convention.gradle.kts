@@ -35,7 +35,7 @@ publishing {
     repositories {
         maven {
             name = "build"
-            setUrl("${buildDir}/repo")
+            setUrl(layout.buildDirectory.file("repo").get().asFile.path)
         }
     }
 }

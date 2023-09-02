@@ -19,13 +19,13 @@ task jarv2(type:Jar) {
 task japicmpOnlyCheckStableApi(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldClasspath.from(jar)
     newClasspath.from(jarv2)
-    txtOutputFile = file("$buildDir/reports/japi.txt")
+    txtOutputFile = layout.buildDirectory.file('reports/japi.txt').get().asFile
     annotationIncludes = ['@me.champeau.gradle.japicmp.StableApi']
 }
 
 task japicmpExcludeBetaApi(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldClasspath.from(jar)
     newClasspath.from(jarv2)
-    txtOutputFile = file("$buildDir/reports/japi.txt")
+    txtOutputFile = layout.buildDirectory.file('reports/japi.txt').get().asFile
     annotationExcludes = ['@me.champeau.gradle.japicmp.BetaApi']
 }
