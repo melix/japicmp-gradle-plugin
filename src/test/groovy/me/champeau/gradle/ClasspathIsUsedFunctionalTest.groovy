@@ -23,11 +23,11 @@ class ClasspathIsUsedFunctionalTest extends BaseFunctionalTest {
             case JavaVersion.VERSION_17:
                 byteCodeVersion = '61.0'
                 break
-            case JavaVersion.VERSION_19:
-                byteCodeVersion = '63.0'
+            case JavaVersion.VERSION_20:
+                byteCodeVersion = '64.0'
                 break
             default:
-                throw new IllegalStateException("Need to update the byteCode version mapping for Java ${JavaVersion.current()}")
+                throw new IllegalStateException("Need to update the byteCode version mapping for Java ${JavaVersion.current()}, you can ref https://javaalmanac.io/bytecode/versions")
         }
         // Superclasses can only be reported if the classpath is present
         hasTextReport("""

@@ -8,7 +8,7 @@ import org.gradle.util.GradleVersion;
  * @author Cedric Champeau
  */
 public class JapicmpPlugin implements Plugin<Project> {
-    private final static GradleVersion GRADLE_MIN = GradleVersion.version("6.0");
+    private final static GradleVersion GRADLE_MIN = GradleVersion.version("6.6");
     private final static boolean IS_GRADLE_MIN = GradleVersion.current().compareTo(GRADLE_MIN) >= 0;
 
     public void apply(Project project) {
