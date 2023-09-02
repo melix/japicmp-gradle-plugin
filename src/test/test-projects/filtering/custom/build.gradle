@@ -27,7 +27,7 @@ task jarv2(type: Jar) {
 task japicmpAddCustomMatchTriggers(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldClasspath.from(jar)
     newClasspath.from(jarv2)
-    txtOutputFile = file("$buildDir/reports/japi.txt")
+    txtOutputFile = layout.buildDirectory.file('reports/japi.txt').get().asFile
     addExcludeFilter(MyCustomFilter)
 }
 
@@ -35,7 +35,7 @@ task japicmpAddCustomMatchTriggers(type: me.champeau.gradle.japicmp.JapicmpTask)
 task japicmpRemoveCustomMatchTriggers(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldClasspath.from(jarv2)
     newClasspath.from(jar)
-    txtOutputFile = file("$buildDir/reports/japi.txt")
+    txtOutputFile = layout.buildDirectory.file('reports/japi.txt').get().asFile
     addExcludeFilter(MyCustomFilter)
 }
 

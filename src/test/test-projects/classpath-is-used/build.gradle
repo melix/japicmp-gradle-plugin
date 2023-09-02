@@ -26,11 +26,11 @@ task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
     newClasspath.from(configurations.main2RuntimeClasspath)
     oldArchives.from(jar)
     newArchives.from(jarv2)
-    txtOutputFile = file("$buildDir/reports/japi.txt")
+    txtOutputFile = layout.buildDirectory.file('reports/japi.txt').get().asFile
 }
 
 task japicmpWithoutClasspath(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldArchives.from(jar)
     newArchives.from(jarv2)
-    txtOutputFile = file("$buildDir/reports/japi.txt")
+    txtOutputFile = layout.buildDirectory.file('reports/japi.txt').get().asFile
 }

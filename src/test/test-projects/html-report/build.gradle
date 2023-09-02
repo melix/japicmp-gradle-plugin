@@ -19,7 +19,7 @@ dependencies {
 task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldClasspath.from(configurations.baseline)
     newClasspath.from(configurations.current)
-    htmlOutputFile = file("$buildDir/reports/japi.html")
+    htmlOutputFile = layout.buildDirectory.file('reports/japi.html').get().asFile
 }
 
 task japicmpRich(type: me.champeau.gradle.japicmp.JapicmpTask) {
