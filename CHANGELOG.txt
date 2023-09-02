@@ -1,6 +1,7 @@
 Unreleased
 -----
    * Bump min Gradle requirement to 6.6
+   * Upgrade to JApiCmp 0.17.3
 0.4.2
 -----
    * Bump min Gradle requirement to 6.0
