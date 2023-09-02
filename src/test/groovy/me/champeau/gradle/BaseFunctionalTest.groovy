@@ -2,7 +2,6 @@ package me.champeau.gradle
 
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
-import org.gradle.util.GradleVersion
 import spock.lang.Specification
 import spock.lang.TempDir
 
@@ -104,13 +103,10 @@ abstract class BaseFunctionalTest extends Specification {
     protected boolean supportsConfigurationCache = true
 
     private List<String> getExtraArguments() {
-        def extraArgs = ['--stacktrace']
-        def version = GradleVersion.version(gradleVersion)
-        extraArgs << '--warning-mode=fail'
-        if (version >= GradleVersion.version('7.2')) {
-            if (supportsConfigurationCache) {
-                extraArgs << '--configuration-cache'
-            }
+        def extraArgs = ['--stacktrace', '--warning-mode=fail']
+        // TODO: https://github.com/melix/japicmp-gradle-plugin/commit/c398274f8e0a3c3daad7475c420806cebbef190e
+        if (supportsConfigurationCache) {
+            extraArgs << '--configuration-cache'
         }
         return extraArgs
     }
