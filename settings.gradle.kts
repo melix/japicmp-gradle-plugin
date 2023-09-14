@@ -20,10 +20,12 @@ dependencyResolutionManagement {
 
 rootProject.name = "japicmp-gradle-plugin"
 
+val isCiBuild = providers.environmentVariable("CI").isPresent
+
 gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
-        publishAlwaysIf(System.getenv("CI") != null)
+        publishAlwaysIf(isCiBuild)
     }
 }
