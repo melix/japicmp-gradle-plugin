@@ -1,12 +1,7 @@
 package me.champeau.gradle
 
 import org.gradle.testkit.runner.TaskOutcome
-import spock.lang.Requires
 
-@Requires({
-    def major = System.getProperty("gradleVersion").split("\\.").first() as int
-    major >= 6
-})
 class BomFunctionalTest extends BaseFunctionalTest {
     String testProject = 'bom-project'
 
