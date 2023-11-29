@@ -27,7 +27,7 @@ val testJdk = providers.gradleProperty("me.champeau.japicmp.javaToolchain.test")
 // https://docs.gradle.org/current/userguide/compatibility.html
 allGradle.forEach { gradleVersion ->
     if (gradleVersion < "7.3" && testJdk >= 17) return@forEach
-    if (gradleVersion < "8.3" && testJdk >= 20) return@forEach
+    if (gradleVersion < "8.5" && testJdk >= 21) return@forEach
 
     val task = tasks.register<Test>("testJdk${testJdk}onGradle${gradleVersion}") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
