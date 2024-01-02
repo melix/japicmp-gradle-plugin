@@ -12,6 +12,7 @@ class BomFunctionalTest extends BaseFunctionalTest {
         then:
         result.task(":japicmp").outcome == TaskOutcome.SUCCESS
         hasTextReport('CLASS FILE FORMAT VERSION: 50.0 <- 50.0')
+        noSemverReport()
         noHtmlReport()
         noRichReport()
 

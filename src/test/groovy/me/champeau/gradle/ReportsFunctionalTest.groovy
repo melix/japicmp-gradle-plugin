@@ -13,6 +13,7 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         result.task(":japicmp").outcome == TaskOutcome.SUCCESS
         hasHtmlReport('<a href="#org.apache.commons.lang3.event.EventListenerSupport">')
         noTxtReport()
+        noSemverReport()
         noRichReport()
 
         when:
@@ -31,6 +32,7 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         hasRichReport('<a class=\'navbar-brand\' href=\'#\'>Binary compatibility report</a>')
         hasRichReport('A test of rich report')
         noTxtReport()
+        noSemverReport()
         noHtmlReport()
 
         when:
@@ -38,5 +40,23 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
 
         then:
         result.task(":japicmpRich").outcome == TaskOutcome.UP_TO_DATE
+    }
+
+    def "can generate a semantic versioning report"() {
+        when:
+        def result = run 'japicmpSemver'
+
+        then:
+        result.task(":japicmpSemver").outcome == TaskOutcome.SUCCESS
+        hasSemverReport('0.1.0')
+        noTxtReport()
+        noHtmlReport()
+        noRichReport()
+
+        when:
+        result = run 'japicmpSemver'
+
+        then:
+        result.task(":japicmpSemver").outcome == TaskOutcome.UP_TO_DATE
     }
 }

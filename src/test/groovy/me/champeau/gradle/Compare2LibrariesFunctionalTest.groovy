@@ -12,6 +12,7 @@ class Compare2LibrariesFunctionalTest extends BaseFunctionalTest {
         then:
         result.task(":japicmp").outcome == TaskOutcome.SUCCESS
         hasTextReport('UNCHANGED CLASS: PUBLIC org.apache.commons.lang3.AnnotationUtils')
+        noSemverReport()
         noHtmlReport()
         noRichReport()
 
