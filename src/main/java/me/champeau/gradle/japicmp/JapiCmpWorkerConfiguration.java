@@ -49,6 +49,7 @@ public class JapiCmpWorkerConfiguration implements Serializable {
     protected final File xmlOutputFile;
     protected final File htmlOutputFile;
     protected final File txtOutputFile;
+    protected final File semverOutputFile;
     protected final boolean failOnModification;
     protected final RichReport.Configuration richReport;
 
@@ -78,6 +79,7 @@ public class JapiCmpWorkerConfiguration implements Serializable {
                                       final File xmlOutputFile,
                                       final File htmlOutputFile,
                                       final File txtOutputFile,
+                                      final File semverOutputFile,
                                       final boolean failOnModification,
                                       final RichReport.Configuration richReport) {
         this.includeSynthetic = includeSynthetic;
@@ -106,6 +108,7 @@ public class JapiCmpWorkerConfiguration implements Serializable {
         this.xmlOutputFile = xmlOutputFile;
         this.htmlOutputFile = htmlOutputFile;
         this.txtOutputFile = txtOutputFile;
+        this.semverOutputFile = semverOutputFile;
         this.failOnModification = failOnModification | failOnSourceIncompatibility;
         this.richReport = richReport;
     }
