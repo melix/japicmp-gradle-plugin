@@ -69,6 +69,7 @@ failOnModification:: When set to true, the build fails in case a modification ha
 xmlOutputFile:: Path to the generated XML report. Type: _File_. Default value: _null_
 htmlOutputFile:: Path to the generated HTML report. Type: _File_. Default value: _null_
 txtOutputFile:: Path to the generated TXT report. Type: _File_. Default value: _null_
+semverOutputFile:: Path to the generated semantic versioning report. Type: _File_. Default value: _null_
 includeSynthetic:: Synthetic classes and class members (like e.g. bridge methods) are not tracked per default. This new option enables the tracking of such kind of classes and class members
 ignoreMissingClasses:: Ignores all superclasses or interfaces that missing on the classpath. Default value: _false_
 
