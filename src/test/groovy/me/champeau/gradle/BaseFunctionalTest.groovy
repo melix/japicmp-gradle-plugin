@@ -56,6 +56,10 @@ abstract class BaseFunctionalTest extends Specification {
         hasReport('japi', 'txt', lookup)
     }
 
+    void hasSemverReport(String lookup = '') {
+        hasReport('japi', 'semver', lookup)
+    }
+
     void hasHtmlReport(String lookup = '') {
         hasReport('japi', 'html', lookup)
     }
@@ -66,6 +70,10 @@ abstract class BaseFunctionalTest extends Specification {
 
     void noTxtReport() {
         assert !getReport('japi', 'txt').exists()
+    }
+
+    void noSemverReport() {
+        assert !getReport('japi', 'semver').exists()
     }
 
     void noHtmlReport() {

@@ -36,6 +36,7 @@ class ClasspathIsUsedFunctionalTest extends BaseFunctionalTest {
 \t***! MODIFIED SUPERCLASS: me.champeau.gradle.japicmp.ChangedLibrarySuperclass (<- me.champeau.gradle.japicmp.LibrarySuperclass)
 \t===  UNCHANGED CONSTRUCTOR: PUBLIC Subtype()
 """)
+        noSemverReport()
         noHtmlReport()
         noRichReport()
     }

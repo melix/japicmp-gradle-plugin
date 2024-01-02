@@ -30,3 +30,9 @@ task japicmpRich(type: me.champeau.gradle.japicmp.JapicmpTask) {
         description = 'A test of rich report'
     }
 }
+
+task japicmpSemver(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath.from(configurations.baseline)
+    newClasspath.from(configurations.current)
+    semverOutputFile = layout.buildDirectory.file('reports/japi.semver').get().asFile
+}
