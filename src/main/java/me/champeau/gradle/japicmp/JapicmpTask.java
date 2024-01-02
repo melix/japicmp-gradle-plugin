@@ -133,6 +133,7 @@ public abstract class JapicmpTask extends DefaultTask {
                 maybeFile(getXmlOutputFile()),
                 maybeFile(getHtmlOutputFile()),
                 maybeFile(getTxtOutputFile()),
+                maybeFile(getSemverOutputFile()),
                 getFailOnModification().get(),
                 reportConfigurationOf(getRichReport())
         );
@@ -311,6 +312,10 @@ public abstract class JapicmpTask extends DefaultTask {
     @OutputFile
     @Optional
     public abstract RegularFileProperty getTxtOutputFile();
+
+    @OutputFile
+    @Optional
+    public abstract RegularFileProperty getSemverOutputFile();
 
     @Input
     public abstract Property<Boolean> getFailOnModification();

@@ -32,6 +32,7 @@ import japicmp.model.AccessModifier;
 import japicmp.model.JApiClass;
 import japicmp.model.JApiCompatibilityChange;
 import japicmp.model.JApiSemanticVersionLevel;
+import japicmp.output.semver.SemverOut;
 import japicmp.output.stdout.StdoutOutputGenerator;
 import japicmp.output.xml.XmlOutput;
 import japicmp.output.xml.XmlOutputGenerator;
@@ -100,6 +101,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                 configuration.xmlOutputFile,
                 configuration.htmlOutputFile,
                 configuration.txtOutputFile,
+                configuration.semverOutputFile,
                 configuration.failOnModification,
                 configuration.richReport);
     }
@@ -256,6 +258,21 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             }
             if (reportFile == null) {
                 reportFile = txtOutputFile;
+            }
+        }
+
+        if (semverOutputFile != null) {
+            SemverOut semverOut = new SemverOut(options, jApiClasses);
+            String output = semverOut.generate();
+            try (BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(semverOutputFile), "utf-8")
+            )) {
+                writer.write(output);
+            } catch (IOException ex) {
+                throw new GradleException("Unable to write semver", ex);
+            }
+            if (reportFile == null) {
+                reportFile = semverOutputFile;
             }
         }
 
