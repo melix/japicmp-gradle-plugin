@@ -11,6 +11,8 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
 
         then:
         result.task(":japicmp").outcome == TaskOutcome.SUCCESS
+        hasHtmlReport('<td>Old:</td><td>commons-lang3-3.5.jar</td>')
+        hasHtmlReport('<td>New:</td><td>commons-lang3-3.6.jar</td>')
         hasHtmlReport('<a href="#org.apache.commons.lang3.event.EventListenerSupport">')
         noTxtReport()
         noRichReport()

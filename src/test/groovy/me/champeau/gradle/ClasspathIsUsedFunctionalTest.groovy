@@ -30,7 +30,7 @@ class ClasspathIsUsedFunctionalTest extends BaseFunctionalTest {
                 throw new IllegalStateException("Need to update the byteCode version mapping for Java ${JavaVersion.current()}, you can ref https://javaalmanac.io/bytecode/versions")
         }
         // Superclasses can only be reported if the classpath is present
-        hasTextReport("""
+        hasTextReport("""Comparing source compatibility of ${testProjectDir.fileName}-v2.jar against ${testProjectDir.fileName}.jar
 ***! MODIFIED CLASS: PUBLIC me.champeau.gradle.japicmp.Subtype  (not serializable)
 \t===  CLASS FILE FORMAT VERSION: $byteCodeVersion <- $byteCodeVersion
 \t***! MODIFIED SUPERCLASS: me.champeau.gradle.japicmp.ChangedLibrarySuperclass (<- me.champeau.gradle.japicmp.LibrarySuperclass)
