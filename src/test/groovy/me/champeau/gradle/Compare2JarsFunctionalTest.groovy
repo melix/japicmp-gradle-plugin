@@ -11,6 +11,7 @@ class Compare2JarsFunctionalTest extends BaseFunctionalTest {
 
         then:
         result.task(":japicmp").outcome == TaskOutcome.SUCCESS
+        hasTextReport('Comparing source compatibility of commons-lang3-3.6.jar against commons-lang3-3.5.jar')
         hasTextReport('UNCHANGED CLASS: PUBLIC org.apache.commons.lang3.AnnotationUtils')
         noSemverReport()
         noHtmlReport()
@@ -29,6 +30,7 @@ class Compare2JarsFunctionalTest extends BaseFunctionalTest {
 
         then:
         result.task(":japicmpWithExplicitClasspath").outcome == TaskOutcome.SUCCESS
+        hasTextReport('Comparing source compatibility of commons-lang3-3.6.jar against commons-lang3-3.5.jar')
         hasTextReport('UNCHANGED CLASS: PUBLIC org.apache.commons.lang3.AnnotationUtils')
         noSemverReport()
         noHtmlReport()
