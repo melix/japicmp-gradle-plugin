@@ -219,6 +219,9 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         final List<JApiCmpArchive> baseline = toJapiCmpArchives(oldArchives);
         final List<JApiCmpArchive> current = toJapiCmpArchives(newArchives);
         List<JApiClass> jApiClasses = jarArchiveComparator.compare(baseline, current);
+        options.setOldArchives(baseline);
+        options.setNewArchives(current);
+        options.setReportOnlyFilename(true);
         options.setOutputOnlyModifications(onlyModified);
         options.setOutputOnlyBinaryIncompatibleModifications(onlyBinaryIncompatibleModified);
         options.setIncludeSynthetic(includeSynthetic);
