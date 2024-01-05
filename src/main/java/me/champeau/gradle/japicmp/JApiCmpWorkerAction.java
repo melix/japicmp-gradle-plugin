@@ -37,6 +37,7 @@ import japicmp.output.stdout.StdoutOutputGenerator;
 import japicmp.output.xml.XmlOutput;
 import japicmp.output.xml.XmlOutputGenerator;
 import japicmp.output.xml.XmlOutputGeneratorOptions;
+import java.nio.charset.StandardCharsets;
 import me.champeau.gradle.japicmp.filters.FilterConfiguration;
 import me.champeau.gradle.japicmp.report.CompatibilityChangeViolationRuleConfiguration;
 import me.champeau.gradle.japicmp.report.PostProcessRuleConfiguration;
@@ -250,7 +251,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             StdoutOutputGenerator stdoutOutputGenerator = new StdoutOutputGenerator(options, jApiClasses);
             String output = stdoutOutputGenerator.generate();
             try (BufferedWriter writer = new BufferedWriter(
-                    new OutputStreamWriter(new FileOutputStream(txtOutputFile), "utf-8")
+                    new OutputStreamWriter(new FileOutputStream(txtOutputFile), StandardCharsets.UTF_8)
             )) {
                 writer.write(output);
             } catch (IOException ex) {
@@ -265,7 +266,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             SemverOut semverOut = new SemverOut(options, jApiClasses);
             String output = semverOut.generate();
             try (BufferedWriter writer = new BufferedWriter(
-                new OutputStreamWriter(new FileOutputStream(semverOutputFile), "utf-8")
+                new OutputStreamWriter(new FileOutputStream(semverOutputFile), StandardCharsets.UTF_8)
             )) {
                 writer.write(output);
             } catch (IOException ex) {
