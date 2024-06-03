@@ -26,6 +26,9 @@ class ClasspathIsUsedFunctionalTest extends BaseFunctionalTest {
             case JavaVersion.VERSION_21:
                 byteCodeVersion = '65.0'
                 break
+            case JavaVersion.VERSION_22:
+                byteCodeVersion = '66.0'
+                break
             default:
                 throw new IllegalStateException("Need to update the byteCode version mapping for Java ${JavaVersion.current()}, you can ref https://javaalmanac.io/bytecode/versions")
         }
