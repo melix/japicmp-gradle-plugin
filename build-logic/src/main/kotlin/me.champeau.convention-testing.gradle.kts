@@ -7,12 +7,8 @@ val isCiBuild = providers.environmentVariable("CI").isPresent
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 
-    maxParallelForks = if (isCiBuild) {
-        Runtime.getRuntime().availableProcessors()
-    } else {
-        // https://docs.gradle.org/8.0/userguide/performance.html#execute_tests_in_parallel
-        (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
-    }
+    // https://docs.gradle.org/8.8/userguide/performance.html#execute_tests_in_parallel
+    maxParallelForks = (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
 }
 
 tasks.test {
@@ -28,6 +24,7 @@ val testJdk = providers.gradleProperty("me.champeau.japicmp.javaToolchain.test")
 allGradle.forEach { gradleVersion ->
     if (gradleVersion < "7.3" && testJdk >= 17) return@forEach
     if (gradleVersion < "8.5" && testJdk >= 21) return@forEach
+    if (gradleVersion < "8.8" && testJdk >= 22) return@forEach
 
     val task = tasks.register<Test>("testJdk${testJdk}onGradle${gradleVersion}") {
         group = LifecycleBasePlugin.VERIFICATION_GROUP
