@@ -10,8 +10,8 @@ tasks.withType<Test>().configureEach {
     maxParallelForks = if (isCiBuild) {
         Runtime.getRuntime().availableProcessors()
     } else {
-        // https://docs.gradle.org/8.0/userguide/performance.html#execute_tests_in_parallel
-        (Runtime.getRuntime().availableProcessors() / 2).takeIf { it > 0 } ?: 1
+        // https://docs.gradle.org/8.8/userguide/performance.html#execute_tests_in_parallel
+        (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
     }
 }
 
