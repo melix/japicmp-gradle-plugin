@@ -1,7 +1,7 @@
 package me.champeau.gradle.japicmp.report;
 
 import japicmp.model.JApiChangeStatus;
-import japicmp.model.JApiCompatibilityChange;
+import japicmp.model.JApiCompatibilityChangeType;
 import org.gradle.api.file.Directory;
 import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.RegularFile;
@@ -51,11 +51,11 @@ public abstract class RichReport {
         addPostProcessRule(rule, null);
     }
 
-    public void addRule(JApiCompatibilityChange change, Class<? extends ViolationRule> rule, Map<String, String> params) {
+    public void addRule(JApiCompatibilityChangeType change, Class<? extends ViolationRule> rule, Map<String, String> params) {
         getRules().add(new CompatibilityChangeViolationRuleConfiguration(rule, params, change));
     }
 
-    public void addRule(JApiCompatibilityChange change, Class<? extends ViolationRule> rule) {
+    public void addRule(JApiCompatibilityChangeType change, Class<? extends ViolationRule> rule) {
         addRule(change, rule, null);
     }
 

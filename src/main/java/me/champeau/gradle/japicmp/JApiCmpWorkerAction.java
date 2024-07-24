@@ -30,8 +30,11 @@ import japicmp.filter.JavadocLikeFieldFilter;
 import japicmp.filter.JavadocLikePackageFilter;
 import japicmp.model.AccessModifier;
 import japicmp.model.JApiClass;
-import japicmp.model.JApiCompatibilityChange;
+import japicmp.model.JApiCompatibilityChangeType;
 import japicmp.model.JApiSemanticVersionLevel;
+import japicmp.output.html.HtmlOutput;
+import japicmp.output.html.HtmlOutputGenerator;
+import japicmp.output.html.HtmlOutputGeneratorOptions;
 import japicmp.output.semver.SemverOut;
 import japicmp.output.stdout.StdoutOutputGenerator;
 import japicmp.output.xml.XmlOutput;
@@ -155,7 +158,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             options.getFilters().getExcludes().add(instantiateFilter(excludeFilter));
         }
         for (String override : compatibilityChangeExcludes) {
-            JApiCompatibilityChange overrideChange = JApiCompatibilityChange.valueOf(override);
+            JApiCompatibilityChangeType overrideChange = JApiCompatibilityChangeType.valueOf(override);
             options.addOverrideCompatibilityChange(new OverrideCompatibilityChange(overrideChange,
                 true, true, JApiSemanticVersionLevel.PATCH));
         }
@@ -229,15 +232,6 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         File reportFile = null;
         if (xmlOutputFile != null) {
             options.setXmlOutputFile(japicmp.util.Optional.of(xmlOutputFile.getAbsolutePath()));
-            reportFile = xmlOutputFile;
-        }
-
-        if (htmlOutputFile != null) {
-            options.setHtmlOutputFile(japicmp.util.Optional.of(htmlOutputFile.getAbsolutePath()));
-            reportFile = htmlOutputFile;
-        }
-
-        if (xmlOutputFile != null || htmlOutputFile != null) {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             try {
                 Thread.currentThread().setContextClassLoader(XmlOutputGenerator.class.getClassLoader());
@@ -248,6 +242,23 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             } finally {
                 Thread.currentThread().setContextClassLoader(cl);
             }
+            reportFile = xmlOutputFile;
+        }
+
+        if (htmlOutputFile != null) {
+            options.setHtmlOutputFile(japicmp.util.Optional.of(htmlOutputFile.getAbsolutePath()));
+            HtmlOutputGeneratorOptions htmlOptions = new HtmlOutputGeneratorOptions();
+            HtmlOutputGenerator htmlOutputGenerator = new HtmlOutputGenerator(jApiClasses, options, htmlOptions);
+            HtmlOutput htmlOutput = htmlOutputGenerator.generate();
+            String output = htmlOutput.getHtml();
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(htmlOutputFile), StandardCharsets.UTF_8)
+            )) {
+                writer.write(output);
+            } catch (IOException ex) {
+                throw new GradleException("Unable to write html report", ex);
+            }
+            reportFile = htmlOutputFile;
         }
 
         if (txtOutputFile != null) {
@@ -258,7 +269,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             )) {
                 writer.write(output);
             } catch (IOException ex) {
-                throw new GradleException("Unable to write report", ex);
+                throw new GradleException("Unable to write text report", ex);
             }
             if (reportFile == null) {
                 reportFile = txtOutputFile;

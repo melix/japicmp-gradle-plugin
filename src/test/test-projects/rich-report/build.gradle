@@ -1,7 +1,7 @@
 import japicmp.model.JApiChangeStatus
 import japicmp.model.JApiClass
 import japicmp.model.JApiCompatibility
-import japicmp.model.JApiCompatibilityChange
+import japicmp.model.JApiCompatibilityChangeType
 import me.champeau.gradle.japicmp.report.AbstractContextAwareViolationRule
 import me.champeau.gradle.japicmp.report.PostProcessViolationsRule
 import me.champeau.gradle.japicmp.report.SetupRule
@@ -67,7 +67,7 @@ task japicmpChange(type: me.champeau.gradle.japicmp.JapicmpTask) {
     richReport {
         reportName = 'rich.html'
         description = 'A test of rich report'
-        addRule(JApiCompatibilityChange.CLASS_NO_LONGER_PUBLIC, GenericRule)
+        addRule(JApiCompatibilityChangeType.CLASS_NO_LONGER_PUBLIC, GenericRule)
         addSetupRule(MySetupRule)
         addPostProcessRule(MyTearDownRule)
         addRule(ContextAwareRule)

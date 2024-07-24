@@ -21,6 +21,7 @@ import japicmp.model.JApiAnnotationElement;
 import japicmp.model.JApiClass;
 import japicmp.model.JApiCompatibility;
 import japicmp.model.JApiCompatibilityChange;
+import japicmp.model.JApiCompatibilityChangeType;
 import japicmp.model.JApiConstructor;
 import japicmp.model.JApiField;
 import japicmp.model.JApiImplementedInterface;
@@ -91,7 +92,7 @@ public class Violation {
         }
         List<String> describedChanges = new ArrayList<String>(changes.size());
         for (JApiCompatibilityChange change : changes) {
-            describedChanges.add(describe(change));
+            describedChanges.add(describe(change.getType()));
         }
         return describedChanges;
     }
@@ -140,7 +141,7 @@ public class Violation {
         return member.toString();
     }
 
-    public static String describe(JApiCompatibilityChange change) {
+    public static String describe(JApiCompatibilityChangeType change) {
         switch (change) {
             case ANNOTATION_DEPRECATED_ADDED:
                 return "Deprecated annotation was added";

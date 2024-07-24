@@ -15,19 +15,19 @@
  */
 package me.champeau.gradle.japicmp.report;
 
-import japicmp.model.JApiCompatibilityChange;
+import japicmp.model.JApiCompatibilityChangeType;
 
 import java.util.Map;
 
 public class CompatibilityChangeViolationRuleConfiguration extends ViolationRuleConfiguration {
-    private final JApiCompatibilityChange change;
+    private final JApiCompatibilityChangeType change;
 
-    public CompatibilityChangeViolationRuleConfiguration(final Class<? extends ViolationRule> ruleClass, final Map<String, String> arguments, final JApiCompatibilityChange change) {
+    public CompatibilityChangeViolationRuleConfiguration(final Class<? extends ViolationRule> ruleClass, final Map<String, String> arguments, final JApiCompatibilityChangeType change) {
         super(ruleClass, arguments);
         this.change = change;
     }
 
-    public JApiCompatibilityChange getChange() {
+    public JApiCompatibilityChangeType getChange() {
         return change;
     }
 }

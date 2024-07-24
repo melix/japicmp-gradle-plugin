@@ -11,7 +11,7 @@ buildScanRecipes {
 }
 
 dependencies {
-    api("com.github.siom79.japicmp:japicmp:0.18.3") {
+    api("com.github.siom79.japicmp:japicmp:0.22.0") {
         exclude(group = "com.google.guava")
         exclude(group = "io.airlift")
         exclude(group = "javax.xml.bind")
@@ -21,5 +21,5 @@ dependencies {
     compileOnly(gradleApi())
 
     testImplementation(gradleTestKit())
-    testImplementation("org.spockframework:spock-core:2.1-groovy-3.0")
+    testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
 }
