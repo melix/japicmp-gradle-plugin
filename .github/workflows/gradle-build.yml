@@ -20,6 +20,6 @@ jobs:
         with:
           distribution: 'zulu'
           java-version: ${{ matrix.jdk }}
-      - uses: gradle/actions/setup-gradle@v3
+      - uses: gradle/actions/setup-gradle@v4
       - name: Build
         run: ./gradlew build "-Pme.champeau.japicmp.javaToolchain.test=${{ matrix.jdk }}"
