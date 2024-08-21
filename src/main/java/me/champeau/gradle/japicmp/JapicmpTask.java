@@ -49,6 +49,7 @@ public abstract class JapicmpTask extends DefaultTask {
         getFailOnSourceIncompatibility().convention(false);
         getIgnoreMissingClasses().convention(false);
         getIncludeSynthetic().convention(false);
+        getReportOnlySummary().convention(false);
         getOnlyBinaryIncompatibleModified().convention(false);
         getOnlyModified().convention(false);
         getAccessModifier().convention("public");
@@ -128,6 +129,7 @@ public abstract class JapicmpTask extends DefaultTask {
                 current,
                 getOnlyModified().get(),
                 getOnlyBinaryIncompatibleModified().get(),
+                getReportOnlySummary().get(),
                 getFailOnSourceIncompatibility().get(),
                 getAccessModifier().get(),
                 maybeFile(getXmlOutputFile()),
@@ -298,6 +300,9 @@ public abstract class JapicmpTask extends DefaultTask {
 
     @Input
     public abstract Property<Boolean> getOnlyBinaryIncompatibleModified();
+
+    @Input
+    public abstract Property<Boolean> getReportOnlySummary();
 
     @Input
     public abstract Property<Boolean> getFailOnSourceIncompatibility();
