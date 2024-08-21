@@ -48,6 +48,7 @@ public class JapiCmpWorkerConfiguration implements Serializable {
     protected final String accessModifier;
     protected final File xmlOutputFile;
     protected final File htmlOutputFile;
+    protected final File mdOutputFile;
     protected final File txtOutputFile;
     protected final File semverOutputFile;
     protected final boolean failOnModification;
@@ -78,6 +79,7 @@ public class JapiCmpWorkerConfiguration implements Serializable {
                                       final String accessModifier,
                                       final File xmlOutputFile,
                                       final File htmlOutputFile,
+                                      final File mdOutputFile,
                                       final File txtOutputFile,
                                       final File semverOutputFile,
                                       final boolean failOnModification,
@@ -107,6 +109,7 @@ public class JapiCmpWorkerConfiguration implements Serializable {
         this.accessModifier = accessModifier;
         this.xmlOutputFile = xmlOutputFile;
         this.htmlOutputFile = htmlOutputFile;
+        this.mdOutputFile = mdOutputFile;
         this.txtOutputFile = txtOutputFile;
         this.semverOutputFile = semverOutputFile;
         this.failOnModification = failOnModification | failOnSourceIncompatibility;
