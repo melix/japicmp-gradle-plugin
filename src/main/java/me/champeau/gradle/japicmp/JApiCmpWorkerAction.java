@@ -101,6 +101,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                 configuration.newArchives,
                 configuration.onlyModified,
                 configuration.onlyBinaryIncompatibleModified,
+                configuration.reportOnlySummary,
                 configuration.failOnSourceIncompatibility,
                 configuration.accessModifier,
                 configuration.xmlOutputFile,
@@ -229,6 +230,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         options.setReportOnlyFilename(true);
         options.setOutputOnlyModifications(onlyModified);
         options.setOutputOnlyBinaryIncompatibleModifications(onlyBinaryIncompatibleModified);
+        options.setReportOnlySummary(reportOnlySummary);
         options.setIncludeSynthetic(includeSynthetic);
         options.setAccessModifier(AccessModifier.valueOf(accessModifier.toUpperCase()));
         File reportFile = null;

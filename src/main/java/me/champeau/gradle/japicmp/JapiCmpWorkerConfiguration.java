@@ -44,6 +44,7 @@ public class JapiCmpWorkerConfiguration implements Serializable {
     protected final List<JApiCmpWorkerAction.Archive> newArchives;
     protected final boolean onlyModified;
     protected final boolean onlyBinaryIncompatibleModified;
+    protected final boolean reportOnlySummary;
     protected final boolean failOnSourceIncompatibility;
     protected final String accessModifier;
     protected final File xmlOutputFile;
@@ -75,6 +76,7 @@ public class JapiCmpWorkerConfiguration implements Serializable {
                                       final List<JApiCmpWorkerAction.Archive> newArchives,
                                       final boolean onlyModified,
                                       final boolean onlyBinaryIncompatibleModified,
+                                      final boolean reportOnlySummary,
                                       final boolean failOnSourceIncompatibility,
                                       final String accessModifier,
                                       final File xmlOutputFile,
@@ -105,6 +107,7 @@ public class JapiCmpWorkerConfiguration implements Serializable {
         this.newArchives = newArchives;
         this.onlyModified = onlyModified;
         this.onlyBinaryIncompatibleModified = onlyBinaryIncompatibleModified;
+        this.reportOnlySummary = reportOnlySummary;
         this.failOnSourceIncompatibility = failOnSourceIncompatibility;
         this.accessModifier = accessModifier;
         this.xmlOutputFile = xmlOutputFile;
