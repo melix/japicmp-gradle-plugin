@@ -23,6 +23,7 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
 \t\t\t</td>""")
         hasHtmlReport('<a href="#org.apache.commons.lang3.event.EventListenerSupport">')
         noTxtReport()
+        noMarkdownReport()
         noSemverReport()
         noRichReport()
 
@@ -42,6 +43,7 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         hasRichReport('<a class=\'navbar-brand\' href=\'#\'>Binary compatibility report</a>')
         hasRichReport('A test of rich report')
         noTxtReport()
+        noMarkdownReport()
         noSemverReport()
         noHtmlReport()
 
@@ -60,6 +62,7 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         result.task(":japicmpSemver").outcome == TaskOutcome.SUCCESS
         hasSemverReport('0.1.0')
         noTxtReport()
+        noMarkdownReport()
         noHtmlReport()
         noRichReport()
 
@@ -68,5 +71,45 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
 
         then:
         result.task(":japicmpSemver").outcome == TaskOutcome.UP_TO_DATE
+    }
+
+    def "can generate a markdown report"() {
+        when:
+        def result = run 'japicmpMarkdown'
+
+        then:
+        result.task(":japicmpMarkdown").outcome == TaskOutcome.SUCCESS
+        hasmarkdownReport('# Compatibility Report')
+        hasmarkdownReport('- **Report only summary**: No')
+        noTxtReport()
+        noSemverReport()
+        noHtmlReport()
+        noRichReport()
+
+        when:
+        result = run 'japicmpMarkdown'
+
+        then:
+        result.task(":japicmpMarkdown").outcome == TaskOutcome.UP_TO_DATE
+    }
+
+    def "can generate a summary-only markdown report"() {
+        when:
+        def result = run 'japicmpMarkdownReportOnlySummary'
+
+        then:
+        result.task(":japicmpMarkdownReportOnlySummary").outcome == TaskOutcome.SUCCESS
+        hasmarkdownReport('# Compatibility Report')
+        hasmarkdownReport('- **Report only summary**: Yes')
+        noTxtReport()
+        noSemverReport()
+        noHtmlReport()
+        noRichReport()
+
+        when:
+        result = run 'japicmpMarkdownReportOnlySummary'
+
+        then:
+        result.task(":japicmpMarkdownReportOnlySummary").outcome == TaskOutcome.UP_TO_DATE
     }
 }

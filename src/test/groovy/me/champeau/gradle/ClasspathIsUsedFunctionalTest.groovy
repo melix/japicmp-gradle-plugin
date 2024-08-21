@@ -41,6 +41,7 @@ class ClasspathIsUsedFunctionalTest extends BaseFunctionalTest {
 \t===  UNCHANGED CONSTRUCTOR: PUBLIC Subtype()
 """)
         noSemverReport()
+        noMarkdownReport()
         noHtmlReport()
         noRichReport()
     }

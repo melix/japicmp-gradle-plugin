@@ -31,6 +31,19 @@ task japicmpRich(type: me.champeau.gradle.japicmp.JapicmpTask) {
     }
 }
 
+task japicmpMarkdown(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath.from(configurations.baseline)
+    newClasspath.from(configurations.current)
+    mdOutputFile = layout.buildDirectory.file('reports/japi.md').get().asFile
+}
+
+task japicmpMarkdownReportOnlySummary(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath.from(configurations.baseline)
+    newClasspath.from(configurations.current)
+    mdOutputFile = layout.buildDirectory.file('reports/japi.md').get().asFile
+    reportOnlySummary = true
+}
+
 task japicmpSemver(type: me.champeau.gradle.japicmp.JapicmpTask) {
     oldClasspath.from(configurations.baseline)
     newClasspath.from(configurations.current)
