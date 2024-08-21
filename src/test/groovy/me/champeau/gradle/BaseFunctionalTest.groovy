@@ -52,6 +52,10 @@ abstract class BaseFunctionalTest extends Specification {
         }
     }
 
+    void hasmarkdownReport(String lookup = '') {
+        hasReport('japi', 'md', lookup)
+    }
+
     void hasTextReport(String lookup = '') {
         hasReport('japi', 'txt', lookup)
     }
@@ -66,6 +70,10 @@ abstract class BaseFunctionalTest extends Specification {
 
     void hasRichReport(String lookup = '') {
         hasReport('rich', 'html', lookup)
+    }
+
+    void noMarkdownReport() {
+        assert !getReport('japi', 'md').exists()
     }
 
     void noTxtReport() {
