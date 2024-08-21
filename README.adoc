@@ -52,6 +52,7 @@ oldArchives:: The jar files which will be used as the baseline for comparison. T
 newArchives:: The jar files we want to analyze. Type: Type: _FileCollection_.
 onlyModified:: Outputs only modified classes/methods. If not set to true, all classes and methods are printed. Type: _boolean_. Default value: _false_
 onlyBinaryIncompatibleModified:: Outputs only classes/methods with modifications that result in binary incompatibility. Type: _boolean_. Default value: _false_
+reportOnlySummary:: Reports only a breakdown of classes and their status. Type: _boolean_. Default value: _false_
 packageIncludes:: List of package names to include, * can be used as wildcard. Type: _List<String>_
 packageExcludes:: List of package names to exclude, * can be used as wildcard. Type: _List<String>_
 classIncludes:: List of classes to include. Type: _List<String>_
@@ -68,6 +69,7 @@ failOnSourceIncompatibility:: Fails if the changes result in source level incomp
 failOnModification:: When set to true, the build fails in case a modification has been detected. Type: _boolean_. Default value: _false_
 xmlOutputFile:: Path to the generated XML report. Type: _File_. Default value: _null_
 htmlOutputFile:: Path to the generated HTML report. Type: _File_. Default value: _null_
+mdOutputFile:: Path to the generated Markdown report. Type: _File_. Default value: _null_
 txtOutputFile:: Path to the generated TXT report. Type: _File_. Default value: _null_
 semverOutputFile:: Path to the generated semantic versioning report. Type: _File_. Default value: _null_
 includeSynthetic:: Synthetic classes and class members (like e.g. bridge methods) are not tracked per default. This new option enables the tracking of such kind of classes and class members
