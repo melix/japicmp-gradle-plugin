@@ -132,6 +132,7 @@ public abstract class JapicmpTask extends DefaultTask {
                 getAccessModifier().get(),
                 maybeFile(getXmlOutputFile()),
                 maybeFile(getHtmlOutputFile()),
+                maybeFile(getMdOutputFile()),
                 maybeFile(getTxtOutputFile()),
                 maybeFile(getSemverOutputFile()),
                 getFailOnModification().get(),
@@ -308,6 +309,10 @@ public abstract class JapicmpTask extends DefaultTask {
     @OutputFile
     @Optional
     public abstract RegularFileProperty getHtmlOutputFile();
+
+    @OutputFile
+    @Optional
+    public abstract RegularFileProperty getMdOutputFile();
 
     @OutputFile
     @Optional

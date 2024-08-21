@@ -35,6 +35,7 @@ import japicmp.model.JApiSemanticVersionLevel;
 import japicmp.output.html.HtmlOutput;
 import japicmp.output.html.HtmlOutputGenerator;
 import japicmp.output.html.HtmlOutputGeneratorOptions;
+import japicmp.output.markdown.MarkdownOutputGenerator;
 import japicmp.output.semver.SemverOut;
 import japicmp.output.stdout.StdoutOutputGenerator;
 import japicmp.output.xml.XmlOutput;
@@ -104,6 +105,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                 configuration.accessModifier,
                 configuration.xmlOutputFile,
                 configuration.htmlOutputFile,
+                configuration.mdOutputFile,
                 configuration.txtOutputFile,
                 configuration.semverOutputFile,
                 configuration.failOnModification,
@@ -259,6 +261,21 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                 throw new GradleException("Unable to write html report", ex);
             }
             reportFile = htmlOutputFile;
+        }
+
+        if (mdOutputFile != null) {
+            MarkdownOutputGenerator markdownOutputGenerator = new MarkdownOutputGenerator(options, jApiClasses);
+            String output = markdownOutputGenerator.generate();
+            try (BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(new FileOutputStream(mdOutputFile), StandardCharsets.UTF_8)
+            )) {
+                writer.write(output);
+            } catch (IOException ex) {
+                throw new GradleException("Unable to write markdown report", ex);
+            }
+            if (reportFile == null) {
+                reportFile = mdOutputFile;
+            }
         }
 
         if (txtOutputFile != null) {
