@@ -11,7 +11,7 @@ buildScanRecipes {
 }
 
 dependencies {
-    api("com.github.siom79.japicmp:japicmp:0.22.0") {
+    api("com.github.siom79.japicmp:japicmp:0.23.0") {
         exclude(group = "com.google.guava")
         exclude(group = "io.airlift")
         exclude(group = "javax.xml.bind")
