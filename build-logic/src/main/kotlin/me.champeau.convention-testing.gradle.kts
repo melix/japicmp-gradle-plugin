@@ -6,6 +6,7 @@ val isCiBuild = providers.environmentVariable("CI").isPresent
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    inputs.dir("src/test/test-projects").withPropertyName("testProjects")
 
     maxParallelForks = if (isCiBuild) {
         Runtime.getRuntime().availableProcessors()

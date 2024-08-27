@@ -15,10 +15,6 @@ java {
     withJavadocJar()
 }
 
-tasks.test {
-    inputs.dir("src/test/test-projects").withPropertyName("testProjects")
-}
-
 gradlePlugin {
     website = providers.gradleProperty("POM_URL")
     vcsUrl = providers.gradleProperty("POM_URL")
