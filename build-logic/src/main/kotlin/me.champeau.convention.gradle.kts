@@ -1,8 +1,12 @@
 plugins {
-    id("groovy-gradle-plugin")
-    id("maven-publish")
-    id("signing")
+    `java-gradle-plugin`
+    id("com.gradle.plugin-publish")
+    id("com.vanniktech.maven.publish")
 }
+
+version = providers.gradleProperty("VERSION_NAME").get()
+group = providers.gradleProperty("GROUP").get()
+description = providers.gradleProperty("POM_DESCRIPTION").get()
 
 java {
     toolchain {
@@ -12,37 +16,21 @@ java {
     withJavadocJar()
 }
 
-tasks.named("test") {
+tasks.test {
     inputs.dir("src/test/test-projects").withPropertyName("testProjects")
 }
 
 gradlePlugin {
-    website = "https://github.com/melix/japicmp-gradle-plugin"
-    vcsUrl = "https://github.com/melix/japicmp-gradle-plugin"
+    website = providers.gradleProperty("POM_URL")
+    vcsUrl = providers.gradleProperty("POM_URL")
 
     plugins {
         create("japicmpPlugin") {
             id = "me.champeau.gradle.japicmp"
             implementationClass = "me.champeau.gradle.japicmp.JapicmpPlugin"
-            displayName = "Gradle Plugin for JApicmp"
-            description = "Gradle Plugin for JApicmp"
+            displayName = providers.gradleProperty("POM_NAME").get()
+            description = providers.gradleProperty("POM_DESCRIPTION").get()
             tags = listOf("jacpicmp")
         }
-    }
-}
-
-publishing {
-    repositories {
-        maven {
-            name = "build"
-            setUrl(layout.buildDirectory.file("repo").get().asFile.path)
-        }
-    }
-}
-
-signing {
-    useGpgCmd()
-    publishing.publications.forEach { pub ->
-        sign(pub)
     }
 }
