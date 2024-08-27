@@ -1,4 +1,4 @@
-name: Gradle Build
+name: Main
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  gradle:
+  build:
     strategy:
       matrix:
         os: [ ubuntu-latest, windows-latest ]
