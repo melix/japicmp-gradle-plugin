@@ -1,6 +1,6 @@
 plugins {
     id("me.champeau.buildscan-recipes") version "0.2.3"
-    id("com.gradle.plugin-publish") version "1.2.1"
+    id("com.gradle.plugin-publish") version "1.3.0"
     id("me.champeau.convention")
     id("me.champeau.convention-testing")
 }
