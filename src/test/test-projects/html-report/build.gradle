@@ -49,3 +49,9 @@ task japicmpSemver(type: me.champeau.gradle.japicmp.JapicmpTask) {
     newClasspath.from(configurations.current)
     semverOutputFile = layout.buildDirectory.file('reports/japi.semver').get().asFile
 }
+
+task japicmpXml(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    oldClasspath.from(configurations.baseline)
+    newClasspath.from(configurations.current)
+    xmlOutputFile = layout.buildDirectory.file('reports/japi.xml').get().asFile
+}
