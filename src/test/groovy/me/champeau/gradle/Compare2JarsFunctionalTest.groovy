@@ -16,6 +16,7 @@ class Compare2JarsFunctionalTest extends BaseFunctionalTest {
         noSemverReport()
         noMarkdownReport()
         noHtmlReport()
+        noXmlReport()
         noRichReport()
 
         when:
@@ -36,6 +37,7 @@ class Compare2JarsFunctionalTest extends BaseFunctionalTest {
         noSemverReport()
         noMarkdownReport()
         noHtmlReport()
+        noXmlReport()
         noRichReport()
 
         when:

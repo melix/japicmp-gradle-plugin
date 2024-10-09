@@ -43,6 +43,7 @@ class ClasspathIsUsedFunctionalTest extends BaseFunctionalTest {
         noSemverReport()
         noMarkdownReport()
         noHtmlReport()
+        noXmlReport()
         noRichReport()
     }
 

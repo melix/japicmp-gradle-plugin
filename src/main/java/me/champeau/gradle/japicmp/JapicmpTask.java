@@ -204,7 +204,7 @@ public abstract class JapicmpTask extends DefaultTask {
         Set<File> files = fc.getFiles();
         List<JApiCmpWorkerAction.Archive> archives = new ArrayList<>(files.size());
         for (File file : files) {
-            archives.add(new JApiCmpWorkerAction.Archive(file, "1.0"));
+            archives.add(new JApiCmpWorkerAction.Archive(file, "unknown version"));
         }
         return archives;
     }
