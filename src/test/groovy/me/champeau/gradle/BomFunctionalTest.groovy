@@ -14,6 +14,7 @@ class BomFunctionalTest extends BaseFunctionalTest {
         hasTextReport('CLASS FILE FORMAT VERSION: 50.0 <- 50.0')
         noSemverReport()
         noHtmlReport()
+        noXmlReport()
         noMarkdownReport()
         noRichReport()
 

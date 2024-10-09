@@ -25,6 +25,7 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         noTxtReport()
         noMarkdownReport()
         noSemverReport()
+        noXmlReport()
         noRichReport()
 
         when:
@@ -32,6 +33,29 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
 
         then:
         result.task(":japicmp").outcome == TaskOutcome.UP_TO_DATE
+    }
+
+    def "can generate an XML report"() {
+        when:
+        def result = run 'japicmpXml'
+
+        then:
+        result.task(":japicmpXml").outcome == TaskOutcome.SUCCESS
+        hasXmlReport('oldJar="commons-lang3-3.5.jar"')
+        hasXmlReport('newJar="commons-lang3-3.6.jar"')
+        hasXmlReport('oldVersion="unknown version"')
+        hasXmlReport('newVersion="unknown version"')
+        noTxtReport()
+        noMarkdownReport()
+        noSemverReport()
+        noHtmlReport()
+        noRichReport()
+
+        when:
+        result = run 'japicmpXml'
+
+        then:
+        result.task(":japicmpXml").outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "can generate rich report"() {
@@ -46,6 +70,7 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         noMarkdownReport()
         noSemverReport()
         noHtmlReport()
+        noXmlReport()
 
         when:
         result = run 'japicmpRich'
@@ -64,6 +89,7 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         noTxtReport()
         noMarkdownReport()
         noHtmlReport()
+        noXmlReport()
         noRichReport()
 
         when:
@@ -84,6 +110,7 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         noTxtReport()
         noSemverReport()
         noHtmlReport()
+        noXmlReport()
         noRichReport()
 
         when:
@@ -104,6 +131,7 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         noTxtReport()
         noSemverReport()
         noHtmlReport()
+        noXmlReport()
         noRichReport()
 
         when:
