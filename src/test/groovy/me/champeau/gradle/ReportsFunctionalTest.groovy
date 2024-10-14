@@ -35,12 +35,12 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         result.task(":japicmp").outcome == TaskOutcome.UP_TO_DATE
     }
 
-    def "can generate an XML report"() {
+    def "can generate an XML report without versions"() {
         when:
-        def result = run 'japicmpXml'
+        def result = run 'japicmpXmlWithoutVersions'
 
         then:
-        result.task(":japicmpXml").outcome == TaskOutcome.SUCCESS
+        result.task(":japicmpXmlWithoutVersions").outcome == TaskOutcome.SUCCESS
         hasXmlReport('oldJar="commons-lang3-3.5.jar"')
         hasXmlReport('newJar="commons-lang3-3.6.jar"')
         hasXmlReport('oldVersion="unknown version"')
@@ -52,10 +52,33 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         noRichReport()
 
         when:
-        result = run 'japicmpXml'
+        result = run 'japicmpXmlWithoutVersions'
 
         then:
-        result.task(":japicmpXml").outcome == TaskOutcome.UP_TO_DATE
+        result.task(":japicmpXmlWithoutVersions").outcome == TaskOutcome.UP_TO_DATE
+    }
+
+    def "can generate an XML report with versions"() {
+        when:
+        def result = run 'japicmpXmlWithVersions'
+
+        then:
+        result.task(":japicmpXmlWithVersions").outcome == TaskOutcome.SUCCESS
+        hasXmlReport('oldJar="commons-lang3-3.5.jar"')
+        hasXmlReport('newJar="commons-lang3-3.6.jar"')
+        hasXmlReport('oldVersion="3.5"')
+        hasXmlReport('newVersion="3.6"')
+        noTxtReport()
+        noMarkdownReport()
+        noSemverReport()
+        noHtmlReport()
+        noRichReport()
+
+        when:
+        result = run 'japicmpXmlWithVersions'
+
+        then:
+        result.task(":japicmpXmlWithVersions").outcome == TaskOutcome.UP_TO_DATE
     }
 
     def "can generate rich report"() {
