@@ -66,8 +66,14 @@ public abstract class JapicmpTask extends DefaultTask {
     public void exec() {
         ConfigurableFileCollection oldArchives = getOldArchives();
         ConfigurableFileCollection newArchives = getNewArchives();
-        List<JApiCmpWorkerAction.Archive> baseline = !oldArchives.isEmpty() ? toArchives(oldArchives) : inferArchives(getOldClasspath());
-        List<JApiCmpWorkerAction.Archive> current = !newArchives.isEmpty() ? toArchives(newArchives) : inferArchives(getNewClasspath());
+        List<JApiCmpWorkerAction.Archive> baseline = getOldArchiveList().getOrElse(Collections.emptyList());
+        List<JApiCmpWorkerAction.Archive> current = getNewArchiveList().getOrElse(Collections.emptyList());
+        if (baseline.isEmpty()) {
+            baseline = !oldArchives.isEmpty() ? toArchives(oldArchives) : inferArchives(getOldClasspath());
+        }
+        if (current.isEmpty()) {
+            current = !newArchives.isEmpty() ? toArchives(newArchives) : inferArchives(getNewClasspath());
+        }
         execForNewGradle(baseline, current);
     }
 
@@ -295,6 +301,30 @@ public abstract class JapicmpTask extends DefaultTask {
 
     public void addExcludeFilter(Class<? extends Filter> excludeFilterClass) {
         getExcludeFilters().add(new FilterConfiguration(excludeFilterClass));
+    }
+
+    @Input
+    @Optional
+    public abstract ListProperty<JApiCmpWorkerAction.Archive> getOldArchiveList();
+
+    public void addOldArchives(Configuration config) {
+        List<JApiCmpWorkerAction.Archive> oldArchives = new ArrayList<>();
+        for (ResolvedDependency resolvedDependency : config.getResolvedConfiguration().getFirstLevelModuleDependencies()) {
+            collectArchives(oldArchives, resolvedDependency);
+        }
+        getOldArchiveList().addAll(oldArchives);
+    }
+
+    @Input
+    @Optional
+    public abstract ListProperty<JApiCmpWorkerAction.Archive> getNewArchiveList();
+
+    public void addNewArchives(Configuration config) {
+        List<JApiCmpWorkerAction.Archive> newArchives = new ArrayList<>();
+        for (ResolvedDependency resolvedDependency : config.getResolvedConfiguration().getFirstLevelModuleDependencies()) {
+            collectArchives(newArchives, resolvedDependency);
+        }
+        getNewArchiveList().addAll(newArchives);
     }
 
     @Input
