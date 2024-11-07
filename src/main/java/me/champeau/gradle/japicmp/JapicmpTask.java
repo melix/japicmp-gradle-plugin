@@ -26,6 +26,7 @@ import org.gradle.api.tasks.Nested;
 import org.gradle.api.tasks.Optional;
 import org.gradle.api.tasks.OutputFile;
 import org.gradle.api.tasks.TaskAction;
+import org.gradle.process.JavaForkOptions;
 import org.gradle.workers.ProcessWorkerSpec;
 import org.gradle.workers.WorkerExecutor;
 
@@ -75,6 +76,15 @@ public abstract class JapicmpTask extends DefaultTask {
             @Override
             public void execute(ProcessWorkerSpec spec) {
                 spec.getClasspath().from(calculateWorkerClasspath());
+
+                String maxWorkerHeap = getMaxWorkerHeap().getOrNull();
+                if (maxWorkerHeap != null) {
+                    spec.forkOptions(new Action<JavaForkOptions>() {
+                        @Override public void execute(JavaForkOptions javaForkOptions) {
+                            javaForkOptions.setMaxHeapSize(maxWorkerHeap);
+                        }
+                    });
+                }
             }
         }).submit(JApiCmpWorkAction.class, new Action<JapiCmpWorkParameters>() {
             @Override
@@ -353,5 +363,9 @@ public abstract class JapicmpTask extends DefaultTask {
     @Optional
     @Nested
     public abstract Property<RichReport> getRichReport();
+
+    @Optional
+    @Input
+    public abstract Property<String> getMaxWorkerHeap();
 
 }

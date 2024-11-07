@@ -74,6 +74,7 @@ txtOutputFile:: Path to the generated TXT report. Type: _File_. Default value: _
 semverOutputFile:: Path to the generated semantic versioning report. Type: _File_. Default value: _null_
 includeSynthetic:: Synthetic classes and class members (like e.g. bridge methods) are not tracked per default. This new option enables the tracking of such kind of classes and class members
 ignoreMissingClasses:: Ignores all superclasses or interfaces that missing on the classpath. Default value: _false_
+maxWorkerHeap:: The max heap for the Gradle worker process. Type: _String_. Default value: _null_
 
 If you don't set _oldArchives_ and _newArchives_, the plugin will infer them from the _oldClasspath_ and _newClasspath_ properties:
 
