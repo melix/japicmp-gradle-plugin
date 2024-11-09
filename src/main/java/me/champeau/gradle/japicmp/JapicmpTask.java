@@ -231,9 +231,9 @@ public abstract class JapicmpTask extends DefaultTask {
     }
 
     private void collectArchives(final Collection<JApiCmpWorkerAction.Archive> archives, ResolvedDependency resolvedDependency) {
-        String version = resolvedDependency.getModule().getId().getVersion();
         Set<ResolvedArtifact> allModuleArtifacts = resolvedDependency.getAllModuleArtifacts();
         for (ResolvedArtifact resolvedArtifact : allModuleArtifacts) {
+            String version = resolvedArtifact.getModuleVersion().getId().getVersion();
             archives.add(new JApiCmpWorkerAction.Archive(resolvedArtifact.getFile(), version));
         }
     }
