@@ -9,11 +9,18 @@ repositories {
 configurations {
     baseline
     current
+    baseline2
+    current2
 }
 
 dependencies {
     baseline 'org.apache.commons:commons-lang3:3.5'
     current 'org.apache.commons:commons-lang3:3.6'
+
+    baseline2 'org.assertj:assertj-guava:3.25.3'
+    baseline2 'org.assertj:assertj-joda-time:2.2.0'
+    current2 'org.assertj:assertj-guava:3.26.3'
+    current2 'org.assertj:assertj-joda-time:2.1.0'
 }
 
 task japicmp(type: me.champeau.gradle.japicmp.JapicmpTask) {
@@ -59,5 +66,12 @@ task japicmpXmlWithoutVersions(type: me.champeau.gradle.japicmp.JapicmpTask) {
 task japicmpXmlWithVersions(type: me.champeau.gradle.japicmp.JapicmpTask) {
     addOldArchives(configurations.baseline)
     addNewArchives(configurations.current)
+    xmlOutputFile = layout.buildDirectory.file('reports/japi.xml').get().asFile
+}
+
+task japicmpXmlWithTransitiveVersions(type: me.champeau.gradle.japicmp.JapicmpTask) {
+    addOldArchives(configurations.baseline2)
+    addNewArchives(configurations.current2)
+    ignoreMissingClasses = true
     xmlOutputFile = layout.buildDirectory.file('reports/japi.xml').get().asFile
 }
