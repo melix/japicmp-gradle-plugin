@@ -233,9 +233,6 @@ public abstract class JapicmpTask extends DefaultTask {
         for (ResolvedArtifact resolvedArtifact : allModuleArtifacts) {
             archives.add(new JApiCmpWorkerAction.Archive(resolvedArtifact.getFile(), version));
         }
-        for (ResolvedDependency dependency : resolvedDependency.getChildren()) {
-            collectArchives(archives, dependency);
-        }
     }
 
     public void richReport(Action<? super RichReport> configureAction) {
