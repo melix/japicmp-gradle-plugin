@@ -17,6 +17,7 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.file.FileCollection;
 import org.gradle.api.file.RegularFileProperty;
 import org.gradle.api.provider.ListProperty;
+import org.gradle.api.provider.MapProperty;
 import org.gradle.api.provider.Property;
 import org.gradle.api.provider.Provider;
 import org.gradle.api.tasks.CacheableTask;
@@ -38,6 +39,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @CacheableTask
@@ -74,23 +76,24 @@ public abstract class JapicmpTask extends DefaultTask {
         if (current.isEmpty()) {
             current = !newArchives.isEmpty() ? toArchives(newArchives) : inferArchives(getNewClasspath());
         }
-        execForNewGradle(baseline, current);
+        Map<String, ?> workerSystemProperties = getWorkerSystemProperties().getOrElse(Collections.emptyMap());
+        execForNewGradle(baseline, current, workerSystemProperties);
     }
 
-    private void execForNewGradle(final List<JApiCmpWorkerAction.Archive> baseline, final List<JApiCmpWorkerAction.Archive> current) {
+    private void execForNewGradle(final List<JApiCmpWorkerAction.Archive> baseline, final List<JApiCmpWorkerAction.Archive> current, final Map<String, ?> workerSystemProperties) {
         getWorkerExecutor().processIsolation(new Action<ProcessWorkerSpec>() {
             @Override
             public void execute(ProcessWorkerSpec spec) {
                 spec.getClasspath().from(calculateWorkerClasspath());
-
-                String maxWorkerHeap = getMaxWorkerHeap().getOrNull();
-                if (maxWorkerHeap != null) {
-                    spec.forkOptions(new Action<JavaForkOptions>() {
-                        @Override public void execute(JavaForkOptions javaForkOptions) {
+                spec.forkOptions(new Action<JavaForkOptions>() {
+                    @Override public void execute(JavaForkOptions javaForkOptions) {
+                        String maxWorkerHeap = getMaxWorkerHeap().getOrNull();
+                        if (maxWorkerHeap != null) {
                             javaForkOptions.setMaxHeapSize(maxWorkerHeap);
                         }
-                    });
-                }
+                        javaForkOptions.systemProperties(workerSystemProperties);
+                    }
+                });
             }
         }).submit(JApiCmpWorkAction.class, new Action<JapiCmpWorkParameters>() {
             @Override
@@ -397,5 +400,9 @@ public abstract class JapicmpTask extends DefaultTask {
     @Optional
     @Input
     public abstract Property<String> getMaxWorkerHeap();
+
+    @Optional
+    @Input
+    public abstract MapProperty<String, Object> getWorkerSystemProperties();
 
 }
