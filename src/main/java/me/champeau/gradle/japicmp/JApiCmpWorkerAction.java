@@ -74,6 +74,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements Runnable {
@@ -409,6 +410,19 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
 
         public JApiCmpArchive toJapicmpArchive() {
             return new JApiCmpArchive(file, version);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            return obj instanceof Archive && hashCode() == obj.hashCode();
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(file.getName(), version);
         }
     }
 }

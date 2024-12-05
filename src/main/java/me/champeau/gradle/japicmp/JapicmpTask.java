@@ -35,8 +35,10 @@ import java.net.URISyntaxException;
 import java.security.CodeSource;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -225,14 +227,11 @@ public abstract class JapicmpTask extends DefaultTask {
         return archives;
     }
 
-    private void collectArchives(final List<JApiCmpWorkerAction.Archive> archives, ResolvedDependency resolvedDependency) {
-        String version = resolvedDependency.getModule().getId().getVersion();
+    private void collectArchives(final Collection<JApiCmpWorkerAction.Archive> archives, ResolvedDependency resolvedDependency) {
         Set<ResolvedArtifact> allModuleArtifacts = resolvedDependency.getAllModuleArtifacts();
         for (ResolvedArtifact resolvedArtifact : allModuleArtifacts) {
+            String version = resolvedArtifact.getModuleVersion().getId().getVersion();
             archives.add(new JApiCmpWorkerAction.Archive(resolvedArtifact.getFile(), version));
-        }
-        for (ResolvedDependency dependency : resolvedDependency.getChildren()) {
-            collectArchives(archives, dependency);
         }
     }
 
@@ -308,7 +307,7 @@ public abstract class JapicmpTask extends DefaultTask {
     public abstract ListProperty<JApiCmpWorkerAction.Archive> getOldArchiveList();
 
     public void addOldArchives(Configuration config) {
-        List<JApiCmpWorkerAction.Archive> oldArchives = new ArrayList<>();
+        Set<JApiCmpWorkerAction.Archive> oldArchives = new LinkedHashSet<>();
         for (ResolvedDependency resolvedDependency : config.getResolvedConfiguration().getFirstLevelModuleDependencies()) {
             collectArchives(oldArchives, resolvedDependency);
         }
@@ -320,7 +319,7 @@ public abstract class JapicmpTask extends DefaultTask {
     public abstract ListProperty<JApiCmpWorkerAction.Archive> getNewArchiveList();
 
     public void addNewArchives(Configuration config) {
-        List<JApiCmpWorkerAction.Archive> newArchives = new ArrayList<>();
+        Set<JApiCmpWorkerAction.Archive> newArchives = new LinkedHashSet<>();
         for (ResolvedDependency resolvedDependency : config.getResolvedConfiguration().getFirstLevelModuleDependencies()) {
             collectArchives(newArchives, resolvedDependency);
         }

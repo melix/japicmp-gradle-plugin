@@ -81,6 +81,30 @@ class ReportsFunctionalTest extends BaseFunctionalTest {
         result.task(":japicmpXmlWithVersions").outcome == TaskOutcome.UP_TO_DATE
     }
 
+    def "can generate an XML report with no duplicate transitive versions"() {
+        when:
+        def result = run 'japicmpXmlWithTransitiveVersions'
+
+        then:
+        result.task(":japicmpXmlWithTransitiveVersions").outcome == TaskOutcome.SUCCESS
+        hasXmlReport('oldJar="assertj-guava-3.25.3.jar;assertj-core-3.25.3.jar;byte-buddy-1.14.11.jar;assertj-joda-time-2.2.0.jar"')
+        hasXmlReport('newJar="assertj-guava-3.26.3.jar;assertj-core-3.26.3.jar;byte-buddy-1.14.18.jar;assertj-joda-time-2.1.0.jar"')
+        hasXmlReport('oldVersion="3.25.3;3.25.3;1.14.11;2.2.0"')
+        hasXmlReport('newVersion="3.26.3;3.26.3;1.14.18;2.1.0"')
+
+        noTxtReport()
+        noMarkdownReport()
+        noSemverReport()
+        noHtmlReport()
+        noRichReport()
+
+        when:
+        result = run 'japicmpXmlWithTransitiveVersions'
+
+        then:
+        result.task(":japicmpXmlWithTransitiveVersions").outcome == TaskOutcome.UP_TO_DATE
+    }
+
     def "can generate rich report"() {
         when:
         def result = run 'japicmpRich'
