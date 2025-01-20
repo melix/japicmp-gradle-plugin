@@ -75,6 +75,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements Runnable {
@@ -221,8 +222,8 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
     private void generateOutput(JarArchiveComparator jarArchiveComparator) {
         // we create a dummy options because we don't want to avoid use of internal classes of JApicmp
         Options options = Options.newDefault();
-        options.setOldClassPath(japicmp.util.Optional.of(toClasspath(oldClasspath)));
-        options.setNewClassPath(japicmp.util.Optional.of(toClasspath(newClasspath)));
+        options.setOldClassPath(Optional.of(toClasspath(oldClasspath)));
+        options.setNewClassPath(Optional.of(toClasspath(newClasspath)));
         final List<JApiCmpArchive> baseline = toJapiCmpArchives(oldArchives);
         final List<JApiCmpArchive> current = toJapiCmpArchives(newArchives);
         List<JApiClass> jApiClasses = jarArchiveComparator.compare(baseline, current);
@@ -236,7 +237,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         options.setAccessModifier(AccessModifier.valueOf(accessModifier.toUpperCase()));
         File reportFile = null;
         if (xmlOutputFile != null) {
-            options.setXmlOutputFile(japicmp.util.Optional.of(xmlOutputFile.getAbsolutePath()));
+            options.setXmlOutputFile(Optional.of(xmlOutputFile.getAbsolutePath()));
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             try {
                 Thread.currentThread().setContextClassLoader(XmlOutputGenerator.class.getClassLoader());
@@ -251,7 +252,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
         }
 
         if (htmlOutputFile != null) {
-            options.setHtmlOutputFile(japicmp.util.Optional.of(htmlOutputFile.getAbsolutePath()));
+            options.setHtmlOutputFile(Optional.of(htmlOutputFile.getAbsolutePath()));
             HtmlOutputGeneratorOptions htmlOptions = new HtmlOutputGeneratorOptions();
             HtmlOutputGenerator htmlOutputGenerator = new HtmlOutputGenerator(jApiClasses, options, htmlOptions);
             HtmlOutput htmlOutput = htmlOutputGenerator.generate();

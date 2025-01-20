@@ -15,7 +15,6 @@
  */
 package me.champeau.gradle.japicmp.report;
 
-import japicmp.util.Optional;
 import japicmp.model.JApiAnnotation;
 import japicmp.model.JApiAnnotationElement;
 import japicmp.model.JApiClass;
@@ -33,6 +32,7 @@ import javassist.CtMethod;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class Violation {
     private final JApiCompatibility member;
