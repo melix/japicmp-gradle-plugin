@@ -37,8 +37,8 @@ allGradle.forEach { gv ->
     if (gv < GradleVersion.version("7.3") && testJdk >= 17) return@forEach
     // Gradle 8.5+ supports Java 21.
     if (gv < GradleVersion.version("8.5") && testJdk >= 21) return@forEach
-    // Gradle 8.10+ supports Java 23.
-    if (gv < GradleVersion.version("8.10") && testJdk >= 23) return@forEach
+    // Gradle 8.14+ supports Java 24.
+    if (gv < GradleVersion.version("8.14") && testJdk >= 24) return@forEach
     // Executing Gradle on JVM versions 16 and lower has been deprecated. Use JVM 17 or greater to execute Gradle.
     // See https://docs.gradle.org/8.10/userguide/upgrading_version_8.html#minimum_daemon_jvm_version.
     if (gv >= GradleVersion.version("8.10") && testJdk < 17) return@forEach
