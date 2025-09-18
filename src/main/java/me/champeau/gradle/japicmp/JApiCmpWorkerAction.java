@@ -374,7 +374,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             } catch (URISyntaxException e) {
                 reportLink = null;
             }
-            StringBuilder message = new StringBuilder("Verification failed: Detected binary changes.\n")
+            StringBuilder message = new StringBuilder("Detected binary changes.\n")
                     .append("    - current: ")
                     .append(prettyPrint(current))
                     .append("\n    - baseline: ")
