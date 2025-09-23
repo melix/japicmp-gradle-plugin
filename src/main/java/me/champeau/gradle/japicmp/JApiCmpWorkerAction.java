@@ -59,7 +59,6 @@ import me.champeau.gradle.japicmp.report.ViolationTransformer;
 import me.champeau.gradle.japicmp.report.ViolationTransformerConfiguration;
 import me.champeau.gradle.japicmp.report.ViolationsGenerator;
 import org.gradle.api.GradleException;
-import org.gradle.api.tasks.VerificationException;
 
 import javax.inject.Inject;
 import java.io.BufferedWriter;
@@ -374,7 +373,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
             } catch (URISyntaxException e) {
                 reportLink = null;
             }
-            StringBuilder message = new StringBuilder("Detected binary changes.\n")
+            StringBuilder message = new StringBuilder("Analysis failed: Detected binary changes.\n")
                     .append("    - current: ")
                     .append(prettyPrint(current))
                     .append("\n    - baseline: ")
@@ -383,7 +382,7 @@ public class JApiCmpWorkerAction extends JapiCmpWorkerConfiguration implements R
                 message.append(".").append(System.lineSeparator()).append(System.lineSeparator());
                 message.append("See failure report at ").append(reportLink);
             }
-            throw new VerificationException(message.toString());
+            throw new GradleException(message.toString());
         }
     }
 
