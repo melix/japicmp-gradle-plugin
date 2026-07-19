@@ -1,0 +1,7 @@
+[libraries]
+japicmp = "com.github.siom79.japicmp:japicmp:0.23.1"
+spock = "org.spockframework:spock-core:2.3-groovy-3.0"
+
+[plugins]
+buildscanRecipes = "me.champeau.buildscan-recipes:0.2.3"
+pluginPublish = "com.gradle.plugin-publish:2.0.0"
