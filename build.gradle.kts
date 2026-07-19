@@ -1,6 +1,6 @@
 plugins {
-    id("me.champeau.buildscan-recipes") version "0.2.3"
-    id("com.gradle.plugin-publish") version "2.0.0"
+    alias(libs.plugins.buildscanRecipes)
+    alias(libs.plugins.pluginPublish)
     id("me.champeau.convention")
     id("me.champeau.convention-testing")
 }
@@ -11,7 +11,7 @@ buildScanRecipes {
 }
 
 dependencies {
-    api("com.github.siom79.japicmp:japicmp:0.23.1") {
+    api(libs.japicmp) {
         exclude(group = "com.google.guava")
         exclude(group = "io.airlift")
         exclude(group = "javax.xml.bind")
@@ -21,5 +21,5 @@ dependencies {
     compileOnly(gradleApi())
 
     testImplementation(gradleTestKit())
-    testImplementation("org.spockframework:spock-core:2.3-groovy-3.0")
+    testImplementation(libs.spock)
 }
