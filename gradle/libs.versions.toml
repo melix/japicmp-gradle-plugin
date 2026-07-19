@@ -4,4 +4,4 @@ spock = "org.spockframework:spock-core:2.3-groovy-3.0"
 
 [plugins]
 buildscanRecipes = "me.champeau.buildscan-recipes:0.2.3"
-pluginPublish = "com.gradle.plugin-publish:2.0.0"
+pluginPublish = "com.gradle.plugin-publish:2.1.1"
